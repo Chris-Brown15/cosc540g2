@@ -1,15 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>COSC540G2</title>
+    <title>Barterly - Market Exchange</title>
     <link rel="stylesheet" href="css/styles.css">
-  </head>
-  <body>
-    <main>
-        <h1>Welcome to COSC540G2!</h1>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo" style="font-family: 'Playfair Display', serif;">Barterly</div>
+        <div class="nav-links">
+            <a href="#" class="active" style="font-family: 'Playfair Display', serif;">Explore</a>
+            <a href="#" style="font-family: 'Playfair Display', serif;">My Inventory</a>
+            <a href="#" style="font-family: 'Playfair Display', serif;">Past Trades</a>
+        </div>
+        <div class="nav-icons">
+            <button style="font-family: 'Playfair Display', serif;">📩</button>
+            <button style="font-family: 'Playfair Display', serif;">🔔</button>
+            <button style="font-family: 'Playfair Display', serif;">👤</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="hero-section">
+            <h1>Explore The Market</h1>
+            <p>Search for items you know you want to trade—or discover ones you didn't realize you needed.</p>
+        </div>
+
+        <input type="text" class="search-bar" placeholder="What are you looking to trade?">
+
+        <div class="trending-tags">
+            <span class="tag">Trending</span>
+            <span class="tag">Computers</span>
+            <span class="tag">Coffee Filters</span>
+        </div>
+
+        <div class="categories">
+            <a href="#" class="active">All</a>
+            <a href="#">Home & Kitchen</a>
+            <a href="#">Automotive</a>
+            <a href="#">Electronics</a>
+        </div>
+
+        <div class="items-grid" id="productsContainer">
+            <!-- Placeholder item cards -->
+            <div class="item-card"></div>
+            <div class="item-card"></div>
+        </div>
     </main>
-  </body>
+  <script src="script.js"></script>
+  <button onclick="handleFileUpload()" class="upload-button">Upload New Item</button>
+</body>
 </html>
