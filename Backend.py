@@ -42,4 +42,4 @@ if __name__ == "__main__":
 	room1 = chatServer.newRoom("Room 1")
 	room2 = chatServer.newRoom("Room 2")
 	room3 = chatServer.newRoom("Room 3")
-	chatServer.run(True , "0.0.0.0" , 5000)	
+	chatServer.run(False , "0.0.0.0" , 5000)	
