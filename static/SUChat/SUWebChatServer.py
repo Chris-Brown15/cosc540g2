@@ -238,8 +238,7 @@ class SUCChatServer:
 		if(port <= 0 or port >= 65535):
 			raise ValueError(f"{port} is invalid as a port number.")
 
-		self.__theSocketIO.run(self.__theFlaskApp , debug = debug , host = host , port = port)
-
+		self.__theSocketIO.run(self.__theFlaskApp , debug = debug , host = host , port = port , allow_unsafe_werkzeug=True)
 
 	def log(self , statement):
 		if(self.logging):
