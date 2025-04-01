@@ -4,22 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Barterly - Market Exchange</title>
+    <title>SwitchUp - Market Exchange</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="logo" style="font-family: 'Playfair Display', serif;">Barterly</div>
+        <div class="logo" style="font-family: 'Playfair Display', serif;">SwitchUp</div>
         <div class="nav-links">
             <a href="#" class="active" style="font-family: 'Playfair Display', serif;">Explore</a>
-            <a href="#" style="font-family: 'Playfair Display', serif;">My Inventory</a>
-            <a href="#" style="font-family: 'Playfair Display', serif;">Past Trades</a>
+            <a href="#past-trades" style="font-family: 'Playfair Display', serif;">Past Trades</a>
         </div>
         <div class="nav-icons">
             <button style="font-family: 'Playfair Display', serif;">📩</button>
             <button style="font-family: 'Playfair Display', serif;">🔔</button>
-            <button style="font-family: 'Playfair Display', serif;">👤</button>
+            <button id="profileButton" style="font-family: 'Playfair Display', serif;">👤</button>
         </div>
     </nav>
 
@@ -46,12 +47,16 @@
         </div>
 
         <div class="items-grid" id="productsContainer">
-            <!-- Placeholder item cards -->
-            <div class="item-card"></div>
-            <div class="item-card"></div>
+            <!-- Item cards will be dynamically populated here -->
         </div>
     </main>
-  <script src="script.js"></script>
-  <button onclick="handleFileUpload()" class="upload-button">Upload New Item</button>
+    
+    <!-- Upload Button -->
+    <button class="upload-button" onclick="handleFileUpload()">Upload New Item</button>
+    
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/listings.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
