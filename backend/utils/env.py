@@ -3,7 +3,9 @@ import argparse
 import logging 
 import os
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Server")
+
 def load_environment():
     parser = argparse.ArgumentParser(description="Start Flask server with env")
     parser.add_argument(
@@ -16,4 +18,4 @@ def load_environment():
     os.environ["FLASK_ENV"] = args.env
     env_file = f".env.{args.env}"
     load_dotenv(dotenv_path=env_file)
-    logger.info(f"Using environment: {args.env} ({env_file})")
+    logger.info(f"Using environment: {args.env} (file: {env_file})")
