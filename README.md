@@ -50,7 +50,7 @@ INFO:werkzeug: * Debugger PIN: 135-599-923
 - ```/auth/register``` - To register a user
     - **METHOD** - ```POST```
     - **REQUEST BODY** 
-        ```json
+        ```typescript
         {
             "first_name": string,
             "last_name": string,
@@ -65,14 +65,14 @@ INFO:werkzeug: * Debugger PIN: 135-599-923
         ```
     - **RESPONSES**
         - **200 - SUCCESS** 
-        ```json
+        ```typescript
         {
             "data": UserObject,
             "message": "User registered successfully!"
         }
         ```
         - **400, 409 - BAD REQUEST, CONFLICT**
-        ```json
+        ```typescript
         { "error": "User with that email or username already exists" }
         or 
         { "error": "Missing fields: <missing_field>" }
@@ -80,7 +80,7 @@ INFO:werkzeug: * Debugger PIN: 135-599-923
 - ```/auth/login``` - To login a user
     - **METHOD** - ```POST```
     - **REQUEST BODY** 
-        ```json
+        ```typescript
         {
             "username" : string, 
             "password" : string
@@ -88,7 +88,7 @@ INFO:werkzeug: * Debugger PIN: 135-599-923
         ```
     - **RESPONSES**
         - **200 - SUCCESS** 
-        ```json
+        ```typescript
         {
             "data": UserObject,
             "token": JWTToken,
@@ -96,7 +96,7 @@ INFO:werkzeug: * Debugger PIN: 135-599-923
         }
         ```
         - **400, 401 - BAD REQUEST, UNAUTHORIZED**
-        ```json
+        ```typescript
         { "error": "Invalid username!" }
         or 
         { "error": "Authentication error!" }
