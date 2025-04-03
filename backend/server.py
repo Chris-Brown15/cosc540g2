@@ -6,7 +6,11 @@ load_environment()
 import os 
 from flask import Flask
 import logging 
+from utils.blueprints import *
+
+
 from routes.auth import auth
+
 
 
 
@@ -18,9 +22,11 @@ logger = logging.getLogger("Server")
 app = Flask(__name__)
 
 # Register Blueprints
-app.register_blueprint(auth)
+register_blueprints(app, "/api", [
+    (auth, "/auth"),
+])
 ##########################################################
-
+print(app.url_map)
 # Start the app based on env and mode
 if __name__ == "__main__":
     app.run(debug=(os.getenv("FLASK_ENV") == "dev"))

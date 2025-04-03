@@ -10,11 +10,14 @@ def error_response(
     }
    
     return jsonify(response), status_code
+from flask import jsonify
+from datetime import datetime
 
 def success_response(
+    status_code: int = 200,
     message: str = "Success",
     data: dict = None,
-    status_code: int = 200
+    **kwargs
 ):
     response = {
         "message": message,
@@ -29,5 +32,9 @@ def success_response(
                 data[key] = value.isoformat()
 
         response["data"] = data
+
+    # Add any extra key-value fields to the response
+    for key, value in kwargs.items():
+        response[key] = value
 
     return jsonify(response), status_code

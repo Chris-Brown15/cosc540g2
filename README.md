@@ -41,3 +41,65 @@ INFO:Database:Connected to MongoDB database: switchup, collection: users
 WARNING:werkzeug: * Debugger is active!
 INFO:werkzeug: * Debugger PIN: 135-599-923
 ```
+
+#### API Documentation
+
+#### App Base Endpoint: ```/api```
+
+#### Auth Endpoints
+- ```/auth/register``` - To register a user
+    - **METHOD** - ```POST```
+    - **REQUEST BODY** 
+        ```json
+        {
+            "first_name": string,
+            "last_name": string,
+            "email": string,
+            "phone": string,
+            "postal_code": string,
+            "username": string,
+            "password": string,
+            "created_at": Date,
+            "updated_at": Date
+        }
+        ```
+    - **RESPONSES**
+        - **200 - SUCCESS** 
+        ```json
+        {
+            "data": UserObject,
+            "message": "User registered successfully!"
+        }
+        ```
+        - **400, 409 - BAD REQUEST, CONFLICT**
+        ```json
+        { "error": "User with that email or username already exists" }
+        or 
+        { "error": "Missing fields: <missing_field>" }
+        ```
+- ```/auth/login``` - To login a user
+    - **METHOD** - ```POST```
+    - **REQUEST BODY** 
+        ```json
+        {
+            "username" : string, 
+            "password" : string
+        }
+        ```
+    - **RESPONSES**
+        - **200 - SUCCESS** 
+        ```json
+        {
+            "data": UserObject,
+            "token": JWTToken,
+            "message": "Login successful!"
+        }
+        ```
+        - **400, 401 - BAD REQUEST, UNAUTHORIZED**
+        ```json
+        { "error": "Invalid username!" }
+        or 
+        { "error": "Authentication error!" }
+        or 
+        { "error": "Missing fields: <missing_field>" }
+        ```

@@ -8,7 +8,7 @@ from utils.validations import *
 from constants.status import *
 from utils.jwt import *
 
-auth = Blueprint("auth", __name__, url_prefix="/auth")
+auth = Blueprint("auth", __name__)
 users = get_collection("users")
 
 logger = logging.getLogger("AuthRouter")
@@ -44,7 +44,7 @@ def register():
     }
 
     users.insert_one(user)
-    return success_response(message="User registered successfully!", data=user, status_code=StatusCode.CREATED)
+    return success_response( status_code=StatusCode.CREATED, message="User registered successfully!", data=user, )
 
 @auth.route("/login", methods=["POST"])
 def login():
@@ -68,7 +68,6 @@ def login():
         return error_response(error="Authentication error!", status_code=StatusCode.UNAUTHORIZED)
 
     jwt_token = generate_jwt_token(user["email"])
-    user["token"] = jwt_token
     user.pop("password")
     
-    return success_response(message="Login successful!", data=user, status_code=StatusCode.OK)
+    return success_response(status_code=StatusCode.OK,  message="Login successful!", data=user, token=jwt_token )
