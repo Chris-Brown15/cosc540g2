@@ -2,6 +2,9 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pymongo.errors import PyMongoError, ConnectionFailure
 import logging
+import os
+
+
 
 logger = logging.getLogger("Database")
 
@@ -44,3 +47,10 @@ class Database:
         except AttributeError:
             logger.error("Database is not set.")
             raise
+
+MONGODB_URI = os.getenv("MONGODB_URI")
+DEFAULT_DB_NAME = "switchup"
+
+def get_collection(collection_name: str):
+    db = Database(uri=MONGODB_URI, db_name=DEFAULT_DB_NAME, collection_name=collection_name)
+    return db.get_collection()
