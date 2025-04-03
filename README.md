@@ -47,7 +47,7 @@ INFO:werkzeug: * Debugger PIN: 135-599-923
 #### App Base Endpoint: ```/api```
 
 #### Auth Endpoints
-- ```/auth/register``` - To register a user
+- **```/auth/register```** - To register a user
     - **METHOD** - ```POST```
     - **REQUEST BODY** 
         ```typescript
@@ -77,7 +77,7 @@ INFO:werkzeug: * Debugger PIN: 135-599-923
         or 
         { "error": "Missing fields: <missing_field>" }
         ```
-- ```/auth/login``` - To login a user
+- **```/auth/login```** - To login a user
     - **METHOD** - ```POST```
     - **REQUEST BODY** 
         ```typescript
