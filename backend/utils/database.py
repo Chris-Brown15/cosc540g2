@@ -51,6 +51,8 @@ class Database:
 MONGODB_URI = os.getenv("MONGODB_URI")
 DEFAULT_DB_NAME = "switchup"
 
+
+# TODO: Look into Connection pooling to avoid creating a new connection for each collection request
 def get_collection(collection_name: str):
     db = Database(uri=MONGODB_URI, db_name=DEFAULT_DB_NAME, collection_name=collection_name)
     return db.get_collection()
