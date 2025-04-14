@@ -8,13 +8,13 @@ from utils.validations import *
 from constants.status import *
 from utils.jwt import *
 
-auth = Blueprint("auth", __name__)
-users = get_collection("users")
+auth_bp = Blueprint("auth", __name__)
+users_coll = get_collection("users")
 
 logger = logging.getLogger("AuthRouter")
 
 
-@auth.route("/register", methods=["POST"])
+@auth_bp.route("/register", methods=["POST"])
 def register():
     if not request.is_json:
         return jsonify({"error": "Request must be JSON"}), StatusCode.OK
@@ -27,7 +27,7 @@ def register():
     if not validate_fields[0]:
         return error_response(error=f"{validate_fields[1]}", status_code=StatusCode.BAD_REQUEST)
     
-    if users.find_one({"email": data["email"]}) or users.find_one({"username": data["username"]}):
+    if users_coll.find_one({"email": data["email"]}) or users_coll.find_one({"username": data["username"]}):
         return error_response(error="User with that email or username already exists", status_code=StatusCode.CONFLICT)
 
     hashed_pw = generate_password_hash(data["password"])
@@ -43,10 +43,10 @@ def register():
         "updated_at": datetime.now()
     }
 
-    users.insert_one(user)
+    users_coll.insert_one(user)
     return success_response( status_code=StatusCode.CREATED, message="User registered successfully!", data=user, )
 
-@auth.route("/login", methods=["POST"])
+@auth_bp.route("/login", methods=["POST"])
 def login():
     if not request.is_json:
         return jsonify({"error": "Request must be JSON"}), StatusCode.BAD_REQUEST
@@ -59,7 +59,7 @@ def login():
     if not validate_fields[0]:
         return error_response(error=f"{validate_fields[1]}", status_code=StatusCode.BAD_REQUEST)
 
-    user = users.find_one({"username": data["username"]})
+    user = users_coll.find_one({"username": data["username"]})
 
     if not user:
         return error_response(error="Invalid username!", status_code=StatusCode.UNAUTHORIZED)
