@@ -3,12 +3,12 @@
 ## Overview
 Trading Platform facilitating local item exchanges through a matching system.
 
-# Run Locally
+## Run Locally
 
-## Dev
+### Dev
 ```python server.py --env dev```
 
-## PROD
+### PROD
 ```python server.py --env prod```
 
 ## Setup
