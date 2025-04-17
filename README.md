@@ -5,7 +5,7 @@ Trading Platform facilitating local item exchanges through a matching system.
 
 
 ## Setup
-### Frontend
+### Frontend (HTML, CSS, Vanilla JS)
 
 # Current Frontend Implementation
 In the current frontend-only implementation:
@@ -35,7 +35,7 @@ The backend is built using Flask and MongoDB. It uses virtual environment to enc
 - Once the ```virtual_env``` is set up run ```pip install -r requirements.txt``` to install the necessary packages into the virtual environment. 
 - Once all the packages are done installing, we can start the flask server. 
     - Starting the flask server requires a command-line argument ```--env``` that accepts ```dev``` or ```prod``` options. 
-    - To start the flask server in ```dev``` mode run ```python server.py --env dev```.
+    - To start the flask server in ```dev``` mode run ```python3 server.py --env dev```.
     - Similarly to start the flask server in ```prod``` mode run ```python server.py --env prod```. 
 - Once the server starts you should see an output like below: 
  ```
