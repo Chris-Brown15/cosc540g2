@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGO = os.getenv("JWT_ALGO")
 
-def require_jwt(f):
+def require_authentication(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         auth_header = request.headers.get("Authorization", None)
