@@ -16,6 +16,6 @@ def load_environment():
     )
     args = parser.parse_args()
     os.environ["FLASK_ENV"] = args.env
-    env_file = f".env.{args.env}"
+    env_file = f"environments/.env.{args.env}"
     load_dotenv(dotenv_path=env_file)
     logger.info(f"Using environment: {args.env} (file: {env_file})")
