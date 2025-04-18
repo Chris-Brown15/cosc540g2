@@ -35,7 +35,6 @@ def home():
     return render_template("index.html")
 
 ##########################################################
-print(app.url_map)
 # Start the app based on env and mode
 if __name__ == "__main__":
     app.run(debug=(os.getenv("FLASK_ENV") == "dev"))

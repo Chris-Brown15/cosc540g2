@@ -20,8 +20,8 @@ ALLOWED_STATUSES = {"ACTIVE", "DRAFT", "TRADED"}
 ALLOWED_CATEGORIES = {"Home & Living", "Clothing & Accessories", "Kids & Baby", "Books/Movies/Music", "Electronics", "Arts & Crafts"," Tools & DIY", "Garden & Outdoors", "Sports & Recreation", "Pets", "Transportation", "Beauty & Personal Care", "Misc"}
 
 # Create Item
-@require_authentication
 @inventory.route('/', methods=['POST'])
+@require_authentication
 def create_item():
     try:
         data = request.get_json()
@@ -68,8 +68,8 @@ def create_item():
     
 
 # Read All Items
-@require_authentication
 @inventory.route('/', methods=['GET'])
+@require_authentication
 def get_all_items():
     try: 
 
@@ -95,8 +95,8 @@ def get_all_items():
         return error_response(error="Internal server error", status_code=StatusCode.INTERNAL_SERVER_ERROR)
 
 # Read Single Item
-@require_authentication
 @inventory.route('/<string:item_id>', methods=['GET'])
+@require_authentication
 def get_item(item_id):
     try:
         if not ObjectId.is_valid(item_id):
@@ -118,8 +118,8 @@ def get_item(item_id):
         return error_response(error="Internal server error", status_code=StatusCode.INTERNAL_SERVER_ERROR)
 
 # Update Item
-@require_authentication
 @inventory.route('/<string:item_id>', methods=['PUT'])
+@require_authentication
 def update_item(item_id):
     try:
         if not ObjectId.is_valid(item_id):
@@ -170,8 +170,8 @@ def update_item(item_id):
     
 
 # Delete Item
-@require_authentication
 @inventory.route('/<string:item_id>', methods=['DELETE'])
+@require_authentication
 def delete_item(item_id):
     try:
         if not ObjectId.is_valid(item_id):

@@ -4,7 +4,7 @@ from functools import wraps
 from flask import request
 from utils.responses import error_response
 from constants.status import StatusCode 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGO = os.getenv("JWT_ALGO")
@@ -12,6 +12,7 @@ JWT_ALGO = os.getenv("JWT_ALGO")
 def require_authentication(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        print("IS IT EVEN PULLING UP HERE?")
         auth_header = request.headers.get("Authorization", None)
         if not auth_header or not auth_header.startswith("Bearer"):
             return error_response(error="Missing or invalid token", status_code=StatusCode.UNAUTHORIZED)
@@ -32,7 +33,7 @@ def require_authentication(f):
 def generate_jwt_token(email: str):
     payload = {
         "email": email, 
-        "exp": datetime.now() + timedelta(hours=1)  # Token expires in 1 hour
+        "exp": datetime.now(timezone.utc) + timedelta(hours=1)  # Token expires in 1 hour
     }
 
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
