@@ -20,7 +20,7 @@ ALLOWED_STATUSES = {"ACTIVE", "DRAFT", "TRADED"}
 ALLOWED_CATEGORIES = {"Home & Living", "Clothing & Accessories", "Kids & Baby", "Books/Movies/Music", "Electronics", "Arts & Crafts"," Tools & DIY", "Garden & Outdoors", "Sports & Recreation", "Pets", "Transportation", "Beauty & Personal Care", "Misc"}
 
 # Create Item
-@require_authentication()
+@require_authentication
 @inventory.route('/', methods=['POST'])
 def create_item():
     try:
@@ -68,7 +68,7 @@ def create_item():
     
 
 # Read All Items
-@require_authentication()
+@require_authentication
 @inventory.route('/', methods=['GET'])
 def get_all_items():
     try: 
@@ -95,7 +95,7 @@ def get_all_items():
         return error_response(error="Internal server error", status_code=StatusCode.INTERNAL_SERVER_ERROR)
 
 # Read Single Item
-@require_authentication()
+@require_authentication
 @inventory.route('/<string:item_id>', methods=['GET'])
 def get_item(item_id):
     try:
@@ -118,7 +118,7 @@ def get_item(item_id):
         return error_response(error="Internal server error", status_code=StatusCode.INTERNAL_SERVER_ERROR)
 
 # Update Item
-@require_authentication()
+@require_authentication
 @inventory.route('/<string:item_id>', methods=['PUT'])
 def update_item(item_id):
     try:
@@ -170,7 +170,7 @@ def update_item(item_id):
     
 
 # Delete Item
-@require_authentication()
+@require_authentication
 @inventory.route('/<string:item_id>', methods=['DELETE'])
 def delete_item(item_id):
     try:

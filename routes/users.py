@@ -13,7 +13,7 @@ users_coll = get_collection("users")
 logger = logging.getLogger("UsersRouter")
 
 # Read Single User
-@require_authentication()
+@require_authentication
 @users_bp.route('/<string:user_id>', methods=['GET'])
 def get_user(user_id):
     try: 
@@ -28,7 +28,7 @@ def get_user(user_id):
         return error_response(error="Internal server error", status_code=StatusCode.INTERNAL_SERVER_ERROR)
 
 # Update User
-@require_authentication()
+@require_authentication
 @users_bp.route('/<string:user_id>', methods=['PUT'])
 def update_user(user_id):
     try:
