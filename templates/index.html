@@ -1,21 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebSocket Chat</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>SwitchUp - Market Exchange</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
 </head>
+
 <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo" style="font-family: 'Playfair Display', serif;">SwitchUp</div>
+        <div class="nav-links">
+            <a href="#" class="active" style="font-family: 'Playfair Display', serif;">Explore</a>
+            <a href="#past-trades" style="font-family: 'Playfair Display', serif;">Past Trades</a>
+            <a href="#my-inventory" style="font-family: 'Playfair Display', serif;">My Inventory</a>
+        </div>
+        <div class="nav-icons">
+            <button style="font-family: 'Playfair Display', serif;">📩</button>
+            <button style="font-family: 'Playfair Display', serif;">🔔</button>
+            <button id="profileButton" style="font-family: 'Playfair Display', serif;">👤</button>
+        </div>
+    </nav>
 
-    Welcome to this demo text chat service. Click the button below to begin.
-    <br>
-    <div id = "tweenTextButton">
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="hero-section">
+            <h1>Explore The Market</h1>
+            <p>Search for items you know you want to trade—or discover ones you didn't realize you needed.</p>
+        </div>
+
+        <input type="text" class="search-bar" placeholder="What are you looking to trade?">
+
+        <div class="trending-tags">
+            <span class="tag">Trending</span>
+            <span class="tag">Computers</span>
+            <span class="tag">Coffee Filters</span>
+        </div>
+
+        <div class="categories">
+            <a href="#" class="active">All</a>
+            <a href="#">Home & Kitchen</a>
+            <a href="#">Automotive</a>
+            <a href="#">Electronics</a>
+        </div>
+
+        <div class="items-grid" id="productsContainer">
+            <!-- Item cards will be dynamically populated here -->
+        </div>
+    </main>
+
+    <!-- Upload Button -->
+    <button class="upload-button">Upload New Item</button>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAuthModal()">&times;</span>
+
+            <div class="auth-header">
+                <h2 id="auth-title">Login Form</h2>
+            </div>
+
+            <div class="tab">
+                <button id="loginTab" class="active" onclick="switchTab('login')">Login</button>
+                <button id="signupTab" onclick="switchTab('signup')">Signup</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <input type="email" id="login-email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="login-password" placeholder="Password" required>
+                </div>
+                <div class="forgot-password">
+                    <a href="#">Forgot password?</a>
+                </div>
+                <button type="submit" class="submit-btn">Login</button>
+
+                <button type="button" class="google-btn">
+                    <img src="https://images.icon-icons.com/729/PNG/512/google_icon-icons.com_62736.png" alt="Google">
+                    Sign in with Google
+                </button>
+
+                <div class="auth-footer">
+                    Not a member? <a onclick="switchTab('signup')">Signup now</a>
+                </div>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="signup-firstname" placeholder="First Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="signup-lastname" placeholder="Last Name" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="signup-email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signup-password" placeholder="Password" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signup-confirm-password" placeholder="Confirm password" required>
+                </div>
+                <button type="submit" class="submit-btn">Signup</button>
+
+                <button type="button" class="google-btn">
+                    <img src="https://images.icon-icons.com/729/PNG/512/google_icon-icons.com_62736.png" alt="Google">
+                    Sign up with Google
+                </button>
+
+                <div class="auth-footer">
+                    Already a member? <a onclick="switchTab('login')">Login</a>
+                </div>
+            </form>
+        </div>
     </div>
-    <div id="beginButton">
-        <button onclick = "onBegin()">Begin</button>
-    </div>
 
-    <script src="static/index.js" type="text/javascript"></script>
-
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/listing.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
+
 </html>
