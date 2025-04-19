@@ -12,7 +12,8 @@ Trading Platform facilitating local item exchanges through a matching system.
 ```python server.py --env prod```
 
 ## Setup
-### Frontend (HTML, CSS, Vanilla JS)
+
+# Frontend (HTML, CSS, Vanilla JS)
 
 # Current Frontend Implementation
 In the current frontend-only implementation:
@@ -25,6 +26,9 @@ In the current frontend-only implementation:
 - 1. Update the submitListing Function
 - 2. Update the loadListings Function
 - 3. Update the renderListings Function
+
+### Environment
+In the project root directory create an ```environments``` folder and make sure you have both the ```.env.dev``` and ```.env.prod``` files in there. 
 
 ### Backend (Flask)
 The backend is built using Flask and MongoDB. It uses virtual environment to encapsulate all backend related python packages into the project backend directory only. Below are instructions on how to correctly setup the backend. 
