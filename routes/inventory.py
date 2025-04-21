@@ -72,9 +72,21 @@ def create_item():
 @require_authentication
 def get_all_items():
     try: 
+        query = {}
+        category_param = request.args.get("category")
+        search_text = request.args.get("search")
 
-        query = {} 
-        category_param = request.args.get('category')
+        if search_text:
+            # Case-insensitive regex search across multiple fields
+            regex_query = {"$regex": search_text, "$options": "i"}
+            query["$or"] = [
+                # Searchable fields
+                {"title": regex_query},
+                {"category": regex_query},
+                {"description": regex_query},
+                {"status": regex_query},
+                {"condition": regex_query}
+            ]
 
         if category_param:
             category_list = [cat.strip() for cat in category_param.split(",") if cat.strip()]
