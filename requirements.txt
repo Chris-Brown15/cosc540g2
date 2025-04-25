@@ -1,4 +1,4 @@
 flask 
-dotenv
+python-dotenv
 pymongo
-jwt
+PyJWT
