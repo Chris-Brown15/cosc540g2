@@ -17,6 +17,12 @@ from flask import Flask, render_template
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Server")
 
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/uploads')
+MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB max file size
+
+# Create upload folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 app = Flask(__name__)
 
 # Register Blueprints

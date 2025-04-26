@@ -2,6 +2,8 @@ from bson import ObjectId
 from flask import Blueprint, request, jsonify 
 import logging
 from datetime import datetime 
+import os
+from werkzeug.utils import secure_filename
 
 from utils.database import get_collection
 from constants.status import StatusCode
@@ -15,6 +17,17 @@ inventory_coll = get_collection("inventory")
 
 logger = logging.getLogger("InventoryRouter")
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi'}
+UPLOAD_FOLDER = 'uploads'
+
+def allowed_file(filename, video=False):
+    if video:
+        # Video extensions
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'mp4', 'webm', 'ogg', 'mov'}
+    else:
+        # Image extensions
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
 ALLOWED_CONDITIONS = {"BRAND_NEW", "USED", "REFURBISHED"}
 ALLOWED_STATUSES = {"ACTIVE", "DRAFT", "TRADED"}
 ALLOWED_CATEGORIES = {"Home & Living", "Clothing & Accessories", "Kids & Baby", "Books/Movies/Music", "Electronics", "Arts & Crafts"," Tools & DIY", "Garden & Outdoors", "Sports & Recreation", "Pets", "Transportation", "Beauty & Personal Care", "Misc"}
@@ -24,7 +37,8 @@ ALLOWED_CATEGORIES = {"Home & Living", "Clothing & Accessories", "Kids & Baby", 
 @require_authentication
 def create_item():
     try:
-        data = request.get_json()
+        data = request.form
+        # data = request.get_json()
         required_fields = ['user_id', 'title', 'description', 'value', 'currency', 'condition', 'status', 'category']
         validated_fields = check_required_fields(required_fields=required_fields, data=data)
 
@@ -54,13 +68,46 @@ def create_item():
             "condition": data["condition"],
             "status": data["status"],
             "category": data["category"],
+            "media": [], #for multiple media
             "created_at": datetime.now(),
             "updated_at": datetime.now()
         }
 
+        # Process images (multiple files)
+        if 'images' in request.files:
+            images = request.files.getlist('images')
+            for image in images:
+                if image and allowed_file(image.filename):
+                    # Process and save image
+                    filename = secure_filename(image.filename)
+                    path = os.path.join(UPLOAD_FOLDER, filename)
+                    image.save(path)
+                    
+                    # Add to media array
+                    item["media"].append({
+                        "type": "image",
+                        "url": f"/uploads/{filename}"
+                    })
+        
+        # Process video (single file)
+        if 'video' in request.files:
+            video = request.files['video']
+            if video and allowed_file(video.filename, video=True):
+                # Process and save video
+                filename = secure_filename(video.filename)
+                path = os.path.join(UPLOAD_FOLDER, filename)
+                video.save(path)
+                
+                # Add to media array
+                item["media"].append({
+                    "type": "video",
+                    "url": f"/uploads/{filename}"
+                })
+        
+        # Insert item into database
         result = inventory_coll.insert_one(item)
         item["_id"] = str(result.inserted_id)
-
+        
         return success_response(status_code=StatusCode.CREATED, message="Item created successfully!", data=item)
     except Exception as e:
         logger.error(f"Error creating item: {e}")

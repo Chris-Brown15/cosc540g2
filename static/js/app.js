@@ -10,13 +10,15 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
     // Handle profile dropdown
     const profileButton = document.getElementById('profileButton');
-    profileButton.addEventListener('click', (e) => {
-        if (currentUser) {
-            toggleProfileDropdown();
-        } else {
-            showAuthModal();
-        }
-    });
+    if (profileButton) {
+        profileButton.addEventListener('click', (e) => {
+            if (currentUser) {
+                toggleProfileDropdown();
+            } else {
+                showAuthModal();
+            }
+        });
+    }
 
     // Handle upload button
     const uploadButton = document.querySelector('.upload-button');

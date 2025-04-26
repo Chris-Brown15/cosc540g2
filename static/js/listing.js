@@ -1,11 +1,17 @@
-// listings.js - Handle item listings
+// listings.js - Handle item listings with multiple images, video and carousel functionality
+
+let slideshows = {}; // Global variable to store the current slide index for each listing
+let selectedFiles = []; // Global variable To store all selected files
+
 async function loadListings() {
     try {
         const response = await fetch('/api/inventory');
         const listings = await response.json();
-        renderListings(listings);
+        renderListings(listings.data || listings);
     } catch (error) {
         console.error('Failed to load listings:', error);
+        // Fallback to empty array if the API fails
+        renderListings([]);
     }
 }
 
@@ -13,7 +19,7 @@ function renderListings(listings) {
     const container = document.getElementById('productsContainer');
     container.innerHTML = '';
 
-    if (listings.length === 0) {
+    if (!listings || listings.length === 0) {
         container.innerHTML = '<p>No listings found. Be the first to add one!</p>';
         return;
     }
@@ -21,17 +27,79 @@ function renderListings(listings) {
     listings.forEach(item => {
         const itemCard = document.createElement('div');
         itemCard.className = 'item-card';
+        itemCard.dataset.itemId = item._id || item.id || '';
+
+        // Create image/video slideshow container
+        let mediaHtml = '';
+        if (item.media && item.media.length > 0) {
+            mediaHtml = `
+                <div class="slideshow-container">
+                    <div class="slideshow-wrapper">
+            `;
+
+            // Add each media item (image or video)
+            item.media.forEach((media, index) => {
+                if (media.type === 'video') {
+                    mediaHtml += `
+                        <div class="slide">
+                            <video class="item-media" controls>
+                                <source src="${media.url}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    `;
+                } else {
+                    // Assume it's an image
+                    mediaHtml += `
+                        <div class="slide">
+                            <img class="item-media" src="${media.url}" alt="${item.title || 'Item image'}">
+                        </div>
+                    `;
+                }
+            });
+
+            mediaHtml += `
+                    </div>
+                    <button class="prev-btn" onclick="moveSlide('${item._id || item.id}', -1)">❮</button>
+                    <button class="next-btn" onclick="moveSlide('${item._id || item.id}', 1)">❯</button>
+                    <div class="dots-container">
+            `;
+
+            // Add dots for each slide
+            item.media.forEach((_, index) => {
+                mediaHtml += `<span class="dot" onclick="currentSlide('${item._id || item.id}', ${index})"></span>`;
+            });
+
+            mediaHtml += `
+                    </div>
+                </div>
+            `;
+        } else {
+            // Fallback if no media or single image
+            const imgSrc = item.image || 'https://via.placeholder.com/300x200';
+            mediaHtml = `
+                <div class="item-image-container">
+                    <img src="${imgSrc}" class="item-media" alt="${item.title || 'Item image'}">
+                </div>
+            `;
+        }
+
         itemCard.innerHTML = `
-            <div class="item-image-container">
-                <img src="${item.image || 'https://via.placeholder.com/300x200'}" class="item-image" alt="${item.title || 'Item image'}">
-            </div>
+            ${mediaHtml}
             <div class="item-details">
                 <h3 class="item-title">${item.title || 'Untitled Item'}</h3>
                 <p class="item-description">${item.description || 'No description provided'}</p>
                 <div class="item-location">${item.city || 'Local'}, ${item.state || ''}</div>
             </div>
         `;
+
         container.appendChild(itemCard);
+
+        // Initialize slideshow for this listing if it has media
+        if (item.media && item.media.length > 0) {
+            slideshows[item._id || item.id] = 0;
+            showSlide(item._id || item.id, 0);
+        }
     });
 }
 
@@ -244,7 +312,7 @@ function createListingModal() {
                     
                     <div class="form-group">
                         <label for="listing-description">Description</label>
-                        <textarea id="listing-description" placeholder="Description" required></textarea>
+                        <textarea id="listing-description" placeholder="Description" required style="min-height: 120px; width: 100%; resize: vertical;"></textarea>
                     </div>
                     
                     <div class="form-row">
@@ -290,11 +358,29 @@ function createListingModal() {
                     </div>
                     
                     <div class="form-group">
-                        <label for="listing-image">Upload Image</label>
-                        <input type="file" id="listing-image" accept="image/*" onchange="previewImage(event)">
-                        <div id="image-preview-container" style="margin-top: 10px; display: none;">
-                            <img id="image-preview" style="max-width: 100%; max-height: 200px; border-radius: 8px;" />
+                        <label>Upload Images (Max 5)</label>
+                        <div class="media-upload-container">
+                            <div class="media-upload-box" onclick="document.getElementById('listing-images').click()">
+                                <div class="upload-icon">+</div>
+                                <span>Add Images</span>
+                            </div>
+                            <input type="file" id="listing-images" accept="image/*" multiple onchange="previewImages(event)" style="display: none;">
                         </div>
+                        <div id="image-preview-container" class="media-preview-grid"></div>
+                        <p class="input-helper">You can select up to 5 images</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Upload Video (Optional)</label>
+                        <div class="media-upload-container">
+                            <div class="media-upload-box" onclick="document.getElementById('listing-video').click()">
+                                <div class="upload-icon">+</div>
+                                <span>Add Video</span>
+                            </div>
+                            <input type="file" id="listing-video" accept="video/*" onchange="previewVideo(event)" style="display: none;">
+                        </div>
+                        <div id="video-preview-container"></div>
+                        <p class="input-helper">Maximum video size: 50MB</p>
                     </div>
                     
                     <button type="submit" class="submit-btn">Publish Listing</button>
@@ -311,34 +397,170 @@ function createListingModal() {
     return modal;
 }
 
-// Function to preview the selected image
-function previewImage(event) {
+// Function to preview multiple images
+function previewImages(event) {
     const container = document.getElementById('image-preview-container');
-    const preview = document.getElementById('image-preview');
-    const file = event.target.files[0];
+    const newFiles = event.target.files;
 
-    if (file) {
-        // Show the preview container
-        container.style.display = 'block';
+    // Add new files to our collection (up to max of 5 total)
+    const maxFiles = 5;
+    for (let i = 0; i < newFiles.length && selectedFiles.length < maxFiles; i++) {
+        selectedFiles.push(newFiles[i]);
+    }
 
-        // Create FileReader to read the image
+    if (selectedFiles.length > maxFiles) {
+        selectedFiles = selectedFiles.slice(0, maxFiles);
+        alert(`You can only upload up to ${maxFiles} images. Only the first ${maxFiles} will be used.`);
+    }
+
+    // Clear previous previews
+    container.innerHTML = '';
+
+    // Create previews for each selected image
+    selectedFiles.forEach((file, index) => {
+        const previewBox = document.createElement('div');
+        previewBox.className = 'media-preview-box';
+        previewBox.dataset.index = index;
+
+        // Create preview image
+        const img = document.createElement('img');
+        img.className = 'media-preview';
+
+        // Create remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-media-btn';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.onclick = function () {
+            removeImage(index);
+        };
+
+        // Read the file and set the image source
         const reader = new FileReader();
         reader.onload = function (e) {
-            preview.src = e.target.result;
-        }
+            img.src = e.target.result;
+        };
         reader.readAsDataURL(file);
+
+        // Append elements to container
+        previewBox.appendChild(img);
+        previewBox.appendChild(removeBtn);
+        container.appendChild(previewBox);
+    });
+
+    // Show the container if there are files
+    container.style.display = selectedFiles.length > 0 ? 'grid' : 'none';
+}
+
+// Function for backwards compatibility with original single image preview
+function previewImage(event) {
+    previewImages(event);
+}
+
+
+// Function to remove an image from the preview
+function removeImage(index) {
+    // Remove the file from our collection
+    selectedFiles.splice(index, 1);
+
+    // Update the preview to reflect the change
+    const container = document.getElementById('image-preview-container');
+
+    // Clear previous previews
+    container.innerHTML = '';
+
+    // Create previews for each selected image
+    selectedFiles.forEach((file, idx) => {
+        const previewBox = document.createElement('div');
+        previewBox.className = 'media-preview-box';
+        previewBox.dataset.index = idx;
+
+        // Create preview image
+        const img = document.createElement('img');
+        img.className = 'media-preview';
+
+        // Create remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-media-btn';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.onclick = function () {
+            removeImage(idx);
+        };
+
+        // Read the file and set the image source
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        // Append elements to container
+        previewBox.appendChild(img);
+        previewBox.appendChild(removeBtn);
+        container.appendChild(previewBox);
+    });
+
+    // Show the container if there are files
+    container.style.display = selectedFiles.length > 0 ? 'grid' : 'none';
+}
+
+// Function to preview video
+function previewVideo(event) {
+    const container = document.getElementById('video-preview-container');
+    const file = event.target.files[0];
+
+    // Clear previous preview
+    container.innerHTML = '';
+
+    if (file) {
+        // Check file size (50MB limit)
+        const maxSize = 50 * 1024 * 1024; // 50MB in bytes
+        if (file.size > maxSize) {
+            alert('Video size exceeds the 50MB limit. Please choose a smaller file.');
+            event.target.value = ''; // Clear the input
+            return;
+        }
+
+        const previewBox = document.createElement('div');
+        previewBox.className = 'video-preview-box';
+
+        // Create video element
+        const video = document.createElement('video');
+        video.className = 'video-preview';
+        video.controls = true;
+
+        // Create remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-media-btn';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.onclick = function () {
+            document.getElementById('listing-video').value = '';
+            container.innerHTML = '';
+            container.style.display = 'none';
+        };
+
+        // Read the file and set the video source
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            video.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        // Append elements to container
+        previewBox.appendChild(video);
+        previewBox.appendChild(removeBtn);
+        container.appendChild(previewBox);
+
+        // Show the container
+        container.style.display = 'block';
     } else {
-        // preview hidden if no file is selected
         container.style.display = 'none';
     }
 }
 
-// previewImage function global so it can be accessed from the inline event
-window.previewImage = previewImage;
-
 async function submitListing(e) {
     e.preventDefault();
 
+    // Get form values
     const title = document.getElementById('listing-title').value;
     const description = document.getElementById('listing-description').value;
     const category = document.getElementById('listing-category').value;
@@ -346,6 +568,7 @@ async function submitListing(e) {
     const city = document.getElementById('listing-city').value;
     const state = document.getElementById('listing-state').value;
 
+    // Create FormData object
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
@@ -354,23 +577,58 @@ async function submitListing(e) {
     formData.append('city', city);
     formData.append('state', state);
 
-    let imageDataUrl = null;
-    const fileInput = document.getElementById('listing-image');
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        formData.append('image', file);
+    // Get image and video files
+    const imageFiles = selectedFiles;
 
-        // Get the image data URL for preview
-        imageDataUrl = document.getElementById('image-preview').src;
+    // Process media for display
+    let mediaItems = [];
+
+    // Process images
+    for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        formData.append('images', file); // For the actual backend request
+
+        // For the local preview (read the image as data URL)
+        const reader = new FileReader();
+        const dataUrl = await new Promise(resolve => {
+            reader.onload = e => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+
+        mediaItems.push({
+            type: 'image',
+            url: dataUrl
+        });
     }
 
+    // Process video if present
+    // Process video if present
+    const videoInput = document.getElementById('listing-video');
+    if (videoInput && videoInput.files[0]) {
+        const videoFile = videoInput.files[0];
+        formData.append('video', videoFile); // For the actual backend request
+
+        // For the local preview
+        const reader = new FileReader();
+        const dataUrl = await new Promise(resolve => {
+            reader.onload = e => resolve(e.target.result);
+            reader.readAsDataURL(videoFile);
+        });
+
+        mediaItems.push({
+            type: 'video',
+            url: dataUrl
+        });
+    }
+
+    // Add user ID if available
     if (currentUser && currentUser.id) {
         formData.append('userId', currentUser.id);
     }
 
     try {
         /* BACKEND INTEGRATION - Uncomment when backend is ready
-        const response = await fetch('/api/listings', {
+        const response = await fetch('/api/inventory', {
             method: 'POST',
             body: formData
         });
@@ -379,21 +637,8 @@ async function submitListing(e) {
             const data = await response.json();
             document.getElementById('createListingModal').style.display = 'none';
             
-            // Option 1: Refresh all listings from the server
+            // Option 1: Refresh all listings
             loadListings();
-            
-            // Option 2: Add the new listing with the returned data
-            // const newListing = {
-            //     id: data.id,
-            //     title: title,
-            //     description: description,
-            //     category: category,
-            //     condition: condition,
-            //     city: city,
-            //     state: state,
-            //     image: data.image_url // This should be the URL returned from the server
-            // };
-            // addListingToDisplay(newListing);
         }
         */
 
@@ -410,7 +655,9 @@ async function submitListing(e) {
             condition: condition,
             city: city,
             state: state,
-            image: imageDataUrl // Use the data URL for the image
+            media: mediaItems.length > 0 ? mediaItems : null,
+            // For backwards compatibility
+            image: mediaItems.length > 0 && mediaItems[0].type === 'image' ? mediaItems[0].url : null
         };
 
         addListingToDisplay(mockListing);
@@ -429,11 +676,72 @@ function addListingToDisplay(listing) {
     const container = document.getElementById('productsContainer');
     const itemCard = document.createElement('div');
     itemCard.className = 'item-card';
+    itemCard.dataset.itemId = listing.id || listing._id;
+
+    // Create media HTML
+    let mediaHtml = '';
+
+    if (listing.media && listing.media.length > 0) {
+        // Use slideshow for multiple media
+        mediaHtml = `
+            <div class="slideshow-container">
+                <div class="slideshow-wrapper">
+        `;
+
+        // Add each media item
+        listing.media.forEach((media, index) => {
+            if (media.type === 'video') {
+                mediaHtml += `
+                    <div class="slide">
+                        <video class="item-media" controls>
+                            <source src="${media.url}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                `;
+            } else {
+                mediaHtml += `
+                    <div class="slide">
+                        <img class="item-media" src="${media.url}" alt="${listing.title || 'Item image'}">
+                    </div>
+                `;
+            }
+        });
+
+        mediaHtml += `
+                </div>
+                <button class="prev-btn" onclick="moveSlide('${listing.id || listing._id}', -1)">❮</button>
+                <button class="next-btn" onclick="moveSlide('${listing.id || listing._id}', 1)">❯</button>
+                <div class="dots-container">
+        `;
+
+        // Add dots for each slide
+        listing.media.forEach((_, index) => {
+            mediaHtml += `<span class="dot" onclick="currentSlide('${listing.id || listing._id}', ${index})"></span>`;
+        });
+
+        mediaHtml += `
+                </div>
+            </div>
+        `;
+    } else if (listing.image) {
+        // Fallback to single image if no media array but has image property (for backward compatibility)
+        mediaHtml = `
+            <div class="item-image-container">
+                <img src="${listing.image}" class="item-media" alt="${listing.title || 'Item image'}">
+            </div>
+        `;
+    } else {
+        // Default placeholder if no media at all
+        mediaHtml = `
+            <div class="item-image-container">
+                <img src="https://via.placeholder.com/300x200" class="item-media" alt="${listing.title || 'Item image'}">
+            </div>
+        `;
+    }
 
     itemCard.innerHTML = `
-        <div class="item-image-container">
-            <img src="${listing.image || 'https://via.placeholder.com/300x200'}" class="item-image" alt="${listing.title || 'Item image'}">
-        </div>
+        ${mediaHtml}
         <div class="item-details">
             <h3 class="item-title">${listing.title || 'Untitled Item'}</h3>
             <p class="item-description">${listing.description || 'No description provided'}</p>
@@ -447,45 +755,262 @@ function addListingToDisplay(listing) {
     } else {
         container.appendChild(itemCard);
     }
+
+    // Initialize slideshow for this listing if applicable
+    if (listing.media && listing.media.length > 0) {
+        slideshows[listing.id || listing._id] = 0;
+        showSlide(listing.id || listing._id, 0);
+    }
 }
 
-// CSS for the listing form and modal
+// Function to move to a specific slide
+function currentSlide(itemId, slideIndex) {
+    showSlide(itemId, slideIndex);
+}
+
+// Function to move the slide (prev/next)
+function moveSlide(itemId, step) {
+    showSlide(itemId, slideshows[itemId] + step);
+}
+
+// Function to show a specific slide
+function showSlide(itemId, slideIndex) {
+    const slides = document.querySelectorAll(`.item-card[data-item-id="${itemId}"] .slide`);
+    const dots = document.querySelectorAll(`.item-card[data-item-id="${itemId}"] .dot`);
+
+    if (!slides.length) return;
+
+    // Handle wrapping around
+    if (slideIndex >= slides.length) slideIndex = 0;
+    if (slideIndex < 0) slideIndex = slides.length - 1;
+
+    // Hide all slides
+    for (let i = 0; i < slides.length; i++) {
+        slides[i].style.display = "none";
+        if (dots[i]) dots[i].classList.remove("active");
+    }
+
+    // Show the current slide
+    slides[slideIndex].style.display = "block";
+    if (dots[slideIndex]) dots[slideIndex].classList.add("active");
+
+    // Update the current slide index
+    slideshows[itemId] = slideIndex;
+}
+
+// Make functions globally accessible
+window.previewImages = previewImages;
+window.previewImage = previewImage; // For backward compatibility
+window.previewVideo = previewVideo;
+window.removeImage = removeImage;
+window.moveSlide = moveSlide;
+window.currentSlide = currentSlide;
+window.showSlide = showSlide;
+window.handleFileUpload = handleFileUpload;
+
+// Add CSS for the listing media functionality
 document.addEventListener('DOMContentLoaded', function () {
     const style = document.createElement('style');
     style.textContent = `
-        textarea {
+        /* Slideshow container */
+        .slideshow-container {
+            position: relative;
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            min-height: 100px;
-            resize: vertical;
-            font-family: inherit;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .slideshow-wrapper {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .item-media {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Next & previous buttons */
+        .prev-btn, .next-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
             font-size: 16px;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         
-        #image-preview-container {
-            border: 1px dashed #ddd;
-            padding: 10px;
+        .prev-btn {
+            left: 10px;
+        }
+        
+        .next-btn {
+            right: 10px;
+        }
+        
+        .slideshow-container:hover .prev-btn,
+        .slideshow-container:hover .next-btn {
+            opacity: 1;
+        }
+        
+        /* Dots container */
+        .dots-container {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
             text-align: center;
-            background-color: #f9f9f9;
-            border-radius: 6px;
+            z-index: 10;
         }
         
+        /* Dots */
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin: 0 4px;
+            background-color: #bbb;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .dot.active {
+            background-color: #fff;
+        }
+        
+        /* Media upload styling */
+        .media-upload-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .media-upload-box {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed #0055a4;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-color: #f0f7ff;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 10px 0;
+        }
+        
+        .media-upload-box:hover {
+            background-color: #e0f0ff;
+            transform: translateY(-2px);
+        }
+        
+        .upload-icon {
+            font-size: 32px;
+            color: #0055a4;
+            margin-bottom: 5px;
+        }
+        
+        .media-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        
+        .media-preview-box {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .video-preview-box {
+            position: relative;
+            max-height: 200px;
+            border-radius: 8px;
+            overflow: auto;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+
+        .video-preview {
+            max-width: 100%;
+            max-height: 200px;
+        }
+        
+        .media-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .remove-media-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        .input-helper {
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        /* Improved responsiveness for item cards */
         .item-card {
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             overflow: hidden;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
-            margin-bottom: 20px;
+            height: auto;
             display: flex;
             flex-direction: column;
+            margin-bottom: 20px;
         }
         
         .item-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         
         .item-image-container {
@@ -493,12 +1018,6 @@ document.addEventListener('DOMContentLoaded', function () {
             width: 100%;
             height: 200px;
             overflow: hidden;
-        }
-        
-        .item-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
         
         .item-details {
@@ -521,6 +1040,11 @@ document.addEventListener('DOMContentLoaded', function () {
             font-size: 14px;
             margin-bottom: 10px;
             flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
         
         .item-location {
@@ -529,18 +1053,31 @@ document.addEventListener('DOMContentLoaded', function () {
             margin-top: auto;
         }
         
-        /* Make the modal scrollable */
+        /* Styling for the modal with scrollable content */
         .listing-modal-content {
             max-height: 90vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             padding: 20px;
+            border-radius: 12px;
         }
         
         .modal-scrollable-content {
             overflow-y: auto;
-            max-height: calc(90vh - 40px);
+            max-height: calc(90vh - 60px);
+            padding-right: 10px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 16px;
         }
     `;
     document.head.appendChild(style);
