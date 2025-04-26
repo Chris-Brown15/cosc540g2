@@ -5,7 +5,11 @@ let selectedFiles = []; // Global variable To store all selected files
 
 async function loadListings() {
     try {
-        const response = await fetch('/api/inventory');
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('search');
+        const url = searchQuery ? `/api/inventory?search=${encodeURIComponent(searchQuery)}` : '/api/inventory';
+        
+        const response = await fetch(url);
         const listings = await response.json();
         renderListings(listings.data || listings);
     } catch (error) {
