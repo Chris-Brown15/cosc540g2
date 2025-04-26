@@ -33,7 +33,18 @@
             <p>Search for items you know you want to trade—or discover ones you didn't realize you needed.</p>
         </div>
 
-        <input type="text" class="search-bar" placeholder="What are you looking to trade?">
+        <div class="combo-box">
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="combo-input"
+                class="search-bar"
+                placeholder="What are you looking to trade?"
+                autocomplete="off"
+              />
+            </div>
+            <ul class="dropdown" id="dropdown"></ul>
+          </div>
 
         <div class="trending-tags">
             <span class="tag">Trending</span>
@@ -129,6 +140,7 @@
     <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/listing.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/search.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 

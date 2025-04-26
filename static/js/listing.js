@@ -1,9 +1,18 @@
 // listings.js - Handle item listings
 async function loadListings() {
     try {
-        const response = await fetch('/api/inventory');
-        const listings = await response.json();
-        renderListings(listings);
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('search');
+
+        let apiUrl = '/api/inventory';
+    
+        if (searchQuery) {
+            apiUrl += `?search=${encodeURIComponent(searchQuery)}`;
+        }
+
+        const response = await fetch(apiUrl);
+        const { data } = await response.json();
+        renderListings(data);
     } catch (error) {
         console.error('Failed to load listings:', error);
     }
@@ -13,7 +22,7 @@ function renderListings(listings) {
     const container = document.getElementById('productsContainer');
     container.innerHTML = '';
 
-    if (listings.length === 0) {
+    if (!listings || listings.length === 0) {
         container.innerHTML = '<p>No listings found. Be the first to add one!</p>';
         return;
     }
