@@ -4,16 +4,17 @@ from pymongo.errors import PyMongoError, ConnectionFailure
 import logging
 import os
 
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Database")
 
+DEFAULT_DB_NAME = "switchup"
 
 class Database:
     def __init__(self, uri: str, db_name: str, collection_name: str) -> None:
         try:
+            #print(f"Connecting to MongoDB URI: {uri}")
             self.client = MongoClient(uri, server_api=ServerApi('1'))
-            self.client.admin.command('ping')  # Check if connection is successful
+            self.client.admin.command('ping')
             self.db = self.client[db_name]
             self.collection_name = collection_name
             self.collection = self.db[collection_name]
@@ -48,11 +49,9 @@ class Database:
             logger.error("Database is not set.")
             raise
 
-MONGODB_URI = os.getenv("MONGODB_URI")
-DEFAULT_DB_NAME = "switchup"
-
-
-# TODO: Look into Connection pooling to avoid creating a new connection for each collection request
 def get_collection(collection_name: str):
+    MONGODB_URI = os.getenv("MONGODB_URI")
+    if not MONGODB_URI:
+        raise Exception("MONGODB_URI not found in environment variables")
     db = Database(uri=MONGODB_URI, db_name=DEFAULT_DB_NAME, collection_name=collection_name)
     return db.get_collection()

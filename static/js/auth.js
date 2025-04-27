@@ -1,19 +1,8 @@
-// auth.js
 let currentUser = null;
-
-// Test user for demo purposes
-const testUser = {
-    id: 'test123',
-    firstName: 'Test',
-    lastName: 'User',
-    email: 'test@example.com'
-};
 
 function showAuthModal() {
     const modal = document.getElementById('authModal');
     modal.style.display = 'block';
-
-    // Default to login tab
     switchTab('login');
 }
 
@@ -22,64 +11,114 @@ function closeAuthModal() {
 }
 
 function switchTab(tab) {
-    // tab buttons
     document.getElementById('loginTab').classList.toggle('active', tab === 'login');
     document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
-
-    // form visibility
     document.getElementById('loginForm').classList.toggle('active', tab === 'login');
     document.getElementById('signupForm').classList.toggle('active', tab === 'signup');
-
-    //  modal title
     document.getElementById('auth-title').textContent = tab === 'login' ? 'Login Form' : 'Signup Form';
 }
 
 async function handleLogin(e) {
     e.preventDefault();
+
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
+    const username = email.split('@')[0]; // Temporary username assumption
 
-    // demo purposes- allowing login with any credentials
-    // after implementation, we would validate with our backend
-    currentUser = testUser;
-    closeAuthModal();
-    updateUIForLoggedInUser();
+    try {
+        // Later: Actually POST login credentials here for real auth
+        // For now, lookup user by username
+        const lookupResponse = await fetch(`/api/users/lookup?username=${username}`);
+        const lookupResult = await lookupResponse.json();
 
-    alert('Successfully logged in as ' + email);
+        if (lookupResponse.ok) {
+            currentUser = {
+                id: lookupResult.user_id,
+                firstName: username,  // temporary
+                lastName: '',
+                email: email
+            };
+            closeAuthModal();
+            updateUIForLoggedInUser();
+            alert('Login successful!');
+        } else {
+            console.error('Login failed:', lookupResult.error);
+            alert('Login failed: ' + lookupResult.error);
+        }
+    } catch (error) {
+        console.error('Login request failed:', error);
+        alert('Login request failed!');
+    }
 }
 
 async function handleSignup(e) {
     e.preventDefault();
+
     const firstName = document.getElementById('signup-firstname').value;
     const lastName = document.getElementById('signup-lastname').value;
     const email = document.getElementById('signup-email').value;
+    const username = email.split('@')[0]; // temporary simple username
     const password = document.getElementById('signup-password').value;
     const confirmPassword = document.getElementById('signup-confirm-password').value;
+    const phone = "555-555-5555"; // placeholder for now
+    const postalCode = "00000";    // placeholder for now
 
-    // Check if passwords match
     if (password !== confirmPassword) {
         alert('Passwords do not match!');
         return;
     }
 
-    // demo purposes, allowing signup without backend
-    currentUser = {
-        id: 'user_' + Date.now(),
-        firstName: firstName,
-        lastName: lastName,
-        email: email
+    const userData = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        username: username,
+        password: password,
+        phone: phone,
+        postal_code: postalCode,
     };
 
-    closeAuthModal();
-    updateUIForLoggedInUser();
+    try {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData),
+        });
 
-    alert('Successfully signed up as ' + firstName + ' ' + lastName);
+        const result = await response.json();
+        if (response.ok) {
+            console.log('User registered!', result);
+
+            // Immediately lookup real user _id
+            const lookupResponse = await fetch(`/api/users/lookup?username=${username}`);
+            const lookupResult = await lookupResponse.json();
+            if (lookupResponse.ok) {
+                currentUser = {
+                    id: lookupResult.user_id,
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email
+                };
+            }
+
+            alert('Signup successful!');
+            closeAuthModal();
+            updateUIForLoggedInUser();
+        } else {
+            console.error('Signup error:', result.error);
+            alert('Signup failed: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Signup request failed:', error);
+        alert('Signup request failed!');
+    }
 }
 
 function updateUIForLoggedInUser() {
-    // Update profile button to show user is logged in
     const profileButton = document.getElementById('profileButton');
-    profileButton.textContent = currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0);
+    profileButton.textContent = currentUser.firstName.charAt(0).toUpperCase() + currentUser.lastName.charAt(0).toUpperCase();
     profileButton.style.backgroundColor = '#0055a4';
     profileButton.style.color = 'white';
     profileButton.style.borderRadius = '50%';

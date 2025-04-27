@@ -158,7 +158,6 @@
     font-size: 14px;
 }
 
-/* Add to style.css */
 .upload-button {
     position: fixed;
     bottom: 20px;
@@ -175,6 +174,44 @@
 
 .upload-button:hover {
     background-color: #0056b3;
+}
+
+.floating-buttons {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  
+/* Chat Button */ 
+.badge {
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  padding: 2px 7px;
+  border-radius: 50%;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+}
+
+.chat-button {
+  position: relative; /* Important for badge positioning */
+  padding: 12px 25px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: background-color 0.2s;
+}
+
+.chat-button:hover {
+  background-color: #218838;
 }
 
 /* Search */
@@ -253,3 +290,94 @@
 .dropdown li:hover {
   background-color: #f0f0f0;
 }
+
+.hidden {
+    display: none;
+}
+  
+.chat-modal {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border: 1px solid #ccc;
+    /* REMOVE display: flex from here */
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    z-index: 9999;
+}
+.chat-modal:not(.hidden) {
+    display: flex;
+}
+  
+.chat-sidebar {
+    width: 35%;
+    background: #f5f5f5;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    padding: 10px;
+}
+  
+.chat-main {
+    width: 65%;
+    display: flex;
+    flex-direction: column;
+}
+  
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+  
+.chat-form {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+  
+.close-chat-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+  
+.close-chat-button:hover {
+    color: #333;
+}
+  
+#newMessageInput {
+    flex: 1;
+    padding: 5px;
+    margin-right: 5px;
+}
+
+/* Make the floating chat button visible */
+#openChatButton {
+    position: fixed;
+    bottom: 90px; /* move up a bit so it's above upload button */
+    right: 20px;
+    padding: 12px 25px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.2s;
+    z-index: 10000; /* make sure it's ON TOP */
+  }
+  
+  #openChatButton:hover {
+    background-color: #218838;
+  }
+  
+  

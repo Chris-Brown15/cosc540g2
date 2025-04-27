@@ -62,10 +62,33 @@
         <div class="items-grid" id="productsContainer">
             <!-- Item cards will be dynamically populated here -->
         </div>
-    </main>
+        
+    <!-- Chat Modal -->
+    <div id="chatModal" class="chat-modal hidden">
+      <button id="closeChatButton" class="close-chat-button">×</button>
+      <div class="chat-sidebar">
+        <h4>Chats</h4>
+        <div id="chatUserList"></div>
+      </div>
 
-    <!-- Upload Button -->
-    <button class="upload-button">Upload New Item</button>
+      <div class="chat-main">
+        <div id="chatMessages" class="chat-messages"></div>
+
+        <form id="sendMessageForm" class="chat-form">
+          <input type="text" id="newMessageInput" placeholder="Type a message..." required>
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Floating Button Area -->
+    <div class="floating-buttons">
+      <button id="openChatButton" class="chat-button">
+        💬 Chat
+        <span id="chatNotificationBadge" class="badge hidden">1</span>
+      </button>
+      <button class="upload-button">Upload New Item</button>
+    </div>
 
     <!-- Auth Modal -->
     <div id="authModal" class="modal">
@@ -136,12 +159,272 @@
             </form>
         </div>
     </div>
-
+      
     <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/listing.js') }}"></script>
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        async function createConversation(tradeId, participantIds) {
+          try {
+            const response = await fetch('/api/conversations', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                trade_id: tradeId,
+                participants: participantIds
+              }),
+            });
+      
+            const result = await response.json();
+            if (response.ok) {
+              console.log('Conversation created!', result);
+              document.getElementById('createConversationResult').innerText = `Conversation Created! ID: ${result.conversation_id}`;
+      
+              // After creating, automatically fetch and show the conversation
+              fetchConversation(result.conversation_id);
+            } else {
+              console.error('Error creating conversation:', result.error);
+            }
+          } catch (error) {
+            console.error('Failed to create conversation:', error);
+          }
+        }
+      
+        async function fetchConversation(conversationId) {
+          try {
+            const response = await fetch(`/api/conversations/${conversationId}`);
+            const conversation = await response.json();
+            if (response.ok) {
+              console.log('Fetched conversation:', conversation);
+      
+              // Pretty print the fetched conversation
+              const formatted = JSON.stringify(conversation, null, 2);
+              document.getElementById('createConversationResult').innerText += `\nFetched Conversation:\n${formatted}`;
+            } else {
+              console.error('Error fetching conversation:', conversation.error);
+            }
+          } catch (error) {
+            console.error('Failed to fetch conversation:', error);
+          }
+        }
+      
+        document.getElementById('createConversationForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const tradeId = document.getElementById('tradeIdInput').value;
+          const participant1 = document.getElementById('participant1Input').value;
+          const participant2 = document.getElementById('participant2Input').value;
+          createConversation(tradeId, [participant1, participant2]);
+        });
+      </script>
+
+      <script>
+        async function chatWithUser(username, messageText) {
+          try {
+            const lookupResponse = await fetch(`/api/users/lookup?username=${encodeURIComponent(username)}`);
+            const lookupResult = await lookupResponse.json();
+        
+            if (!lookupResponse.ok) {
+              document.getElementById('chatBoxResult').innerText = `User not found: ${username}`;
+              return;
+            }
+        
+            const recipientId = lookupResult.user_id;
+            const yourUserId = currentUser.id; // use your logged in user ID
+        
+            // Always create a new conversation for now (later you could "check" first)
+            const convoResponse = await fetch('/api/conversations', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                trade_id: yourUserId, // Placeholder
+                participants: [yourUserId, recipientId],
+              }),
+            });
+        
+            const convoResult = await convoResponse.json();
+            if (!convoResponse.ok) {
+              document.getElementById('chatBoxResult').innerText = `Error creating conversation: ${convoResult.error}`;
+              return;
+            }
+        
+            const conversationId = convoResult.conversation_id;
+        
+            // Send message
+            const sendMessageResponse = await fetch(`/api/conversations/${conversationId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sender_id: yourUserId,
+                text: messageText,
+                timestamp: new Date().toISOString(),
+                images: [],
+              }),
+            });
+        
+            if (!sendMessageResponse.ok) {
+              const errorData = await sendMessageResponse.json();
+              document.getElementById('chatBoxResult').innerText = `Failed to send message: ${errorData.error}`;
+              return;
+            }
+        
+            // Message sent — Now Fetch the whole conversation
+            const getConvoResponse = await fetch(`/api/conversations/${conversationId}`);
+            const convoData = await getConvoResponse.json();
+        
+            if (!getConvoResponse.ok) {
+              document.getElementById('chatBoxResult').innerText = `Error fetching conversation!`;
+              return;
+            }
+        
+            // Build HTML of all messages
+            const messagesHtml = convoData.messages.map(msg => {
+              const sender = (msg.sender_id === yourUserId) ? "You" : "Them";
+              return `<div><strong>${sender}:</strong> ${msg.text}</div>`;
+            }).join("");
+        
+            document.getElementById('chatBoxResult').innerHTML = `
+              <h4>Conversation with ${username}:</h4>
+              ${messagesHtml}
+            `;
+        
+            // Clear the form
+            document.getElementById('chatBoxForm').reset();
+        
+          } catch (error) {
+            console.error('Chat error:', error);
+            document.getElementById('chatBoxResult').innerText = `Error: ${error.message}`;
+          }
+        }
+        
+        document.getElementById('chatBoxForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const username = document.getElementById('recipientUsername').value.trim();
+          const message = document.getElementById('chatMessage').value.trim();
+          chatWithUser(username, message);
+        });
+        </script>  
+
+    <script>
+      document.getElementById('openChatButton').addEventListener('click', () => {
+        const chatModal = document.getElementById('chatModal');
+        chatModal.classList.toggle('hidden');
+        
+        // Only load users the first time it opens (optional optimization)
+        if (!chatModal.dataset.loaded) {
+          loadChatUserList();
+          chatModal.dataset.loaded = "true";
+        }
+      });
+
+        // Close Chat when X button clicked
+         document.getElementById('closeChatButton').addEventListener('click', () => {
+         document.getElementById('chatModal').classList.add('hidden');
+      });
+
+      // Load all users into the sidebar
+      async function loadChatUserList() {
+        try {
+          const response = await fetch('/api/users/all');  // <-- We'll make this backend endpoint next!
+          const users = await response.json();
+          const userListDiv = document.getElementById('chatUserList');
+          
+          users.forEach(user => {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'chat-user';
+            userDiv.textContent = user.username;
+            userDiv.style.cursor = 'pointer';
+            userDiv.style.padding = '8px';
+            userDiv.style.borderBottom = '1px solid #ddd';
+            userDiv.addEventListener('click', () => {
+              openChatWithUser(user._id, user.username);
+            });
+            userListDiv.appendChild(userDiv);
+          });
+        } catch (error) {
+          console.error('Failed to load users:', error);
+        }
+      }
+      
+      // Start chatting when clicking a user
+      async function openChatWithUser(userId, username) {
+        document.getElementById('chatMessages').innerHTML = `<h4>Chat with ${username}</h4>`;
+      
+        // Save the currently chatting user ID to send messages later
+        window.currentChatRecipientId = userId;
+      }
+      
+      // Send a new message when typing in the chat box
+      document.getElementById('sendMessageForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const messageText = document.getElementById('newMessageInput').value.trim();
+        if (!messageText || !window.currentChatRecipientId) {
+          return;
+        }
+      
+        try {
+          // Create a new conversation for simplicity (later you can check for existing)
+          const convoResponse = await fetch('/api/conversations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              trade_id: "000000000000000000000000", // Placeholder
+              participants: [currentUser.id, window.currentChatRecipientId],
+            }),
+          });
+          
+          const convoResult = await convoResponse.json();
+          if (!convoResponse.ok) {
+            console.error('Failed to create conversation');
+            return;
+          }
+      
+          const conversationId = convoResult.conversation_id;
+      
+          // Send the message
+          const sendMessageResponse = await fetch(`/api/conversations/${conversationId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sender_id: currentUser.id,
+              text: messageText,
+              timestamp: new Date().toISOString(),
+              images: [],
+            }),
+          });
+      
+          if (sendMessageResponse.ok) {
+            // Display the new message
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML += `<div><strong>You:</strong> ${messageText}</div>`;
+            document.getElementById('newMessageInput').value = '';
+          } else {
+            console.error('Failed to send message');
+          }
+        } catch (error) {
+          console.error('Chat error:', error);
+        }
+      });
+      </script>
+
+      <script>
+        // --- Badge control functions for chat icon ---
+        function showNewMessageBadge(count = 1) {
+          const badge = document.getElementById('chatNotificationBadge');
+          badge.innerText = count;
+          badge.classList.remove('hidden');
+        }
+
+        function hideNewMessageBadge() {
+          const badge = document.getElementById('chatNotificationBadge');
+          badge.classList.add('hidden');
+        }
+      </script>
+  
 </body>
 
 </html>
