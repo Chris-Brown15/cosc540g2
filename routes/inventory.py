@@ -4,6 +4,7 @@ import logging
 from datetime import datetime 
 import os
 from werkzeug.utils import secure_filename
+import traceback
 
 from utils.database import get_collection
 from constants.status import StatusCode
@@ -36,8 +37,13 @@ ALLOWED_CATEGORIES = {"Home & Living", "Clothing & Accessories", "Kids & Baby", 
 @inventory.route('/', methods=['POST'])
 @require_authentication
 def create_item():
+    print("Authorization Header:", request.headers.get("Authorization"))
     try:
         data = request.form
+        # Debug for incoming data
+        print("Form Data Received:", data.to_dict())
+        print("Files Received:", request.files.to_dict())
+
         # data = request.get_json()
         required_fields = ['user_id', 'title', 'description', 'value', 'currency', 'condition', 'status', 'category']
         validated_fields = check_required_fields(required_fields=required_fields, data=data)
@@ -72,6 +78,9 @@ def create_item():
             "created_at": datetime.now(),
             "updated_at": datetime.now()
         }
+
+        # Ensure the upload folder exists before saving files
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
         # Process images (multiple files)
         if 'images' in request.files:
@@ -110,13 +119,13 @@ def create_item():
         
         return success_response(status_code=StatusCode.CREATED, message="Item created successfully!", data=item)
     except Exception as e:
-        logger.error(f"Error creating item: {e}")
+        logger.error("Error creating item:\n" + traceback.format_exc())
         return error_response(error="Internal server error", status_code=StatusCode.INTERNAL_SERVER_ERROR)
     
 
 # Read All Items
 @inventory.route('/', methods=['GET'])
-@require_authentication
+#@require_authentication
 def get_all_items():
     try: 
         query = {}

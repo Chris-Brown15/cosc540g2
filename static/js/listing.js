@@ -323,13 +323,20 @@ function createListingModal() {
                         <div class="form-group">
                             <label for="listing-category">Category</label>
                             <select id="listing-category" required>
-                                <option value="">Select a category</option>
+                                <option value="">Select category</option>
+                                <option value="Home & Living">Home & Living</option>
+                                <option value="Clothing & Accessories">Clothing & Accessories</option>
+                                <option value="Kids & Baby">Kids & Baby</option>
+                                <option value="Books/Movies/Music">Books/Movies/Music</option>
                                 <option value="Electronics">Electronics</option>
-                                <option value="Home & Kitchen">Home & Kitchen</option>
-                                <option value="Automotive">Automotive</option>
-                                <option value="Fashion">Fashion</option>
-                                <option value="Sports">Sports</option>
-                                <option value="Toys">Toys</option>
+                                <option value="Arts & Crafts">Arts & Crafts</option>
+                                <option value="Tools & DIY">Tools & DIY</option>
+                                <option value="Garden & Outdoors">Garden & Outdoors</option>
+                                <option value="Sports & Recreation">Sports & Recreation</option>
+                                <option value="Pets">Pets</option>
+                                <option value="Transportation">Transportation</option>
+                                <option value="Beauty & Personal Care">Beauty & Personal Care</option>
+                                <option value="Misc">Misc</option>
                             </select>
                         </div>
                         
@@ -337,11 +344,9 @@ function createListingModal() {
                             <label for="listing-condition">Condition</label>
                             <select id="listing-condition" required>
                                 <option value="">Select condition</option>
-                                <option value="New">New</option>
-                                <option value="Like New">Like New</option>
-                                <option value="Good">Good</option>
-                                <option value="Fair">Fair</option>
-                                <option value="Poor">Poor</option>
+                                <option value="BRAND_NEW">Brand New</option>
+                                <option value="USED">Used</option>
+                                <option value="REFURBISHED">Refurbished</option>
                             </select>
                         </div>
                     </div>
@@ -361,6 +366,11 @@ function createListingModal() {
                         </div>
                     </div>
                     
+                    <div class="form-group">
+                        <label for="listing-value">Estimated Value</label>
+                        <input type="number" id="listing-value" placeholder="e.g. 10" required>
+                    </div>
+
                     <div class="form-group">
                         <label>Upload Images (Max 5)</label>
                         <div class="media-upload-container">
@@ -571,6 +581,7 @@ async function submitListing(e) {
     const condition = document.getElementById('listing-condition').value;
     const city = document.getElementById('listing-city').value;
     const state = document.getElementById('listing-state').value;
+    const value = document.getElementById('listing-value').value;
 
     // Create FormData object
     const formData = new FormData();
@@ -580,6 +591,9 @@ async function submitListing(e) {
     formData.append('condition', condition);
     formData.append('city', city);
     formData.append('state', state);
+    formData.append('value', value);
+    formData.append('currency', 'USD');
+    formData.append('status', 'ACTIVE');
 
     // Get image and video files
     const imageFiles = selectedFiles;
@@ -627,15 +641,26 @@ async function submitListing(e) {
 
     // Add user ID if available
     if (currentUser && currentUser.id) {
-        formData.append('userId', currentUser.id);
+        formData.append('user_id', currentUser.id);
     }
 
     try {
-        /* BACKEND INTEGRATION - Uncomment when backend is ready
+        /* BACKEND INTEGRATION - Uncomment when backend is ready */
+        const token = localStorage.getItem("authToken");
+        console.log("SUBMIT LISTING CALLED - TOKEN FROM LOCALSTORAGE:", localStorage.getItem("authToken"));
+
+        if (!token) {
+            alert("You must be logged in to create a listing.");
+            return;
+        }
+        
         const response = await fetch('/api/inventory', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: formData
-        });
+        });        
         
         if (response.ok) {
             const data = await response.json();
@@ -644,30 +669,29 @@ async function submitListing(e) {
             // Option 1: Refresh all listings
             loadListings();
         }
-        */
 
         // Mock successful submission for now
-        console.log('Listing submitted:', Object.fromEntries(formData));
-        document.getElementById('createListingModal').style.display = 'none';
+        //console.log('Listing submitted:', Object.fromEntries(formData));
+        //document.getElementById('createListingModal').style.display = 'none';
 
         // Add the new listing to the displayed listings (mock)
-        const mockListing = {
-            id: Date.now(), // Generate a fake ID
-            title: title,
-            description: description,
-            category: category,
-            condition: condition,
-            city: city,
-            state: state,
-            media: mediaItems.length > 0 ? mediaItems : null,
+        //const mockListing = {
+        //    id: Date.now(), // Generate a fake ID
+        //    title: title,
+        //    description: description,
+        //    category: category,
+        //    condition: condition,
+        //    city: city,
+        //    state: state,
+        //    media: mediaItems.length > 0 ? mediaItems : null,
             // For backwards compatibility
-            image: mediaItems.length > 0 && mediaItems[0].type === 'image' ? mediaItems[0].url : null
-        };
+        //    image: mediaItems.length > 0 && mediaItems[0].type === 'image' ? mediaItems[0].url : null
+        //};
 
-        addListingToDisplay(mockListing);
+        //addListingToDisplay(mockListing);
 
         // Show success message
-        alert('Listing created successfully!');
+        //alert('Listing created successfully!');
 
     } catch (error) {
         console.error('Failed to create listing:', error);

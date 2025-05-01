@@ -69,5 +69,9 @@ def login():
 
     jwt_token = generate_jwt_token(user["email"])
     user.pop("password")
-    
-    return success_response(status_code=StatusCode.OK,  message="Login successful!", data=user, token=jwt_token )
+    return jsonify({
+        "token": jwt_token,
+        "user_id": str(user["_id"]),
+        "first_name": user.get("first_name", ""),
+        "last_name": user.get("last_name", "")
+    }), StatusCode.OK

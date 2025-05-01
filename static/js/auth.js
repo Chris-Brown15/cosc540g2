@@ -23,30 +23,37 @@ async function handleLogin(e) {
 
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    const username = email.split('@')[0]; // Temporary username assumption
+    const username = email.split('@')[0]; // Temporary username derivation
 
     try {
-        // Later: Actually POST login credentials here for real auth
-        // For now, lookup user by username
-        const lookupResponse = await fetch(`/api/users/lookup?username=${username}`);
-        const lookupResult = await lookupResponse.json();
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
 
-        if (lookupResponse.ok) {
+        const result = await response.json();
+
+        if (response.ok && result.token) {
+            localStorage.setItem('authToken', result.token);
+            console.log('Login token:', result.token);
+
             currentUser = {
-                id: lookupResult.user_id,
-                firstName: username,  // temporary
-                lastName: '',
+                id: result.user_id,
+                firstName: result.first_name || username,
+                lastName: result.last_name || '',
                 email: email
             };
+
             closeAuthModal();
             updateUIForLoggedInUser();
             alert('Login successful!');
         } else {
-            console.error('Login failed:', lookupResult.error);
-            alert('Login failed: ' + lookupResult.error);
+            console.error('Login failed:', result.error);
+            alert('Login failed: ' + result.error);
         }
     } catch (error) {
-        console.error('Login request failed:', error);
+        console.error('Login error:', error);
         alert('Login request failed!');
     }
 }
