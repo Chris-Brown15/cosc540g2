@@ -233,8 +233,6 @@
             const conversation = await response.json();
             if (response.ok) {
               console.log('Fetched conversation:', conversation);
-      
-              // Pretty print the fetched conversation
               const formatted = JSON.stringify(conversation, null, 2);
               document.getElementById('createConversationResult').innerText += `\nFetched Conversation:\n${formatted}`;
             } else {
@@ -268,7 +266,7 @@
             const recipientId = lookupResult.user_id;
             const yourUserId = currentUser.id; // use your logged in user ID
         
-            // Always create a new conversation for now (later you could "check" first)
+
             const convoResponse = await fetch('/api/conversations', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -400,7 +398,7 @@
             
             // Update the chat header
             chatUserName.textContent = username;
-            chatUserStatus.textContent = 'Active now'; // Placeholder - could be dynamic
+            chatUserStatus.textContent = 'Active now'; 
             
             // Set avatar
             if (avatarSrc) {
@@ -449,7 +447,6 @@
           async function loadChatUsers() {
             if (!currentUser) {
               chatUsersContainer.innerHTML = '<div style="padding: 15px; text-align: center;">Please log in to chat</div>';
-              // Show the user list even when not logged in
               chatUsersList.classList.remove('hidden');
               return;
             }
