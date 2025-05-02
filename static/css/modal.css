@@ -54,7 +54,7 @@
 }
 
 .tab button.active {
-    background: #0055a4;
+    background: linear-gradient(135deg, #34e89e 0%, #0f3443 100%);
     color: white;
     font-weight: bold;
 }
@@ -98,7 +98,7 @@
 .submit-btn {
     width: 100%;
     padding: 12px;
-    background: #0055a4;
+    background: linear-gradient(135deg, #34e89e 0%, #0f3443 100%);
     color: white;
     border: none;
     border-radius: 6px;
@@ -106,6 +106,13 @@
     font-size: 16px;
     font-weight: bold;
     margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: linear-gradient(135deg, #0f3443 0%, #34e89e 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .google-btn {
@@ -137,9 +144,14 @@
 }
 
 .auth-footer a {
-    color: #0055a4;
+    color: #0f3443;
     text-decoration: none;
     cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.auth-footer a:hover {
+    color: #34e89e;
 }
 
 .forgot-password {
@@ -148,7 +160,12 @@
 }
 
 .forgot-password a {
-    color: #0055a4;
+    color: #0f3443;
     text-decoration: none;
     font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+.forgot-password a:hover {
+    color: #34e89e;
 }
