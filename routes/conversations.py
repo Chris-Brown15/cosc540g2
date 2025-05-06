@@ -73,6 +73,7 @@ def update_conversation(conversation_id):
     except Exception as e:
         logger.error(f"Error updating conversation: {e}")
         return jsonify({"error": "Internal server error"}), 500# Check if a conversation already exists between two users
+
 @conversations.route('/check', methods=['GET'])
 def check_conversation():
     user1_id = request.args.get('user1')
@@ -100,4 +101,6 @@ def check_conversation():
         logger.error(f"Error checking conversation: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+@conversations.route('/check', methods=['GET'])
+def get_chat_room_id():
     
