@@ -1,10 +1,11 @@
 from bson import ObjectId
-from flask import Blueprint, request, jsonify 
+from flask import Blueprint, request, jsonify, current_app 
 import logging
 from datetime import datetime 
 import os
 from werkzeug.utils import secure_filename
 import traceback
+import uuid
 
 from utils.database import get_collection
 from constants.status import StatusCode
@@ -19,7 +20,6 @@ inventory_coll = get_collection("inventory")
 logger = logging.getLogger("InventoryRouter")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi'}
-UPLOAD_FOLDER = 'uploads'
 
 def allowed_file(filename, video=False):
     if video:
@@ -39,6 +39,8 @@ ALLOWED_CATEGORIES = {"Home & Living", "Clothing & Accessories", "Kids & Baby", 
 def create_item():
     print("Authorization Header:", request.headers.get("Authorization"))
     try:
+        UPLOAD_FOLDER = os.path.join(current_app.root_path, 'static', 'uploads')
+        
         data = request.form
         # Debug for incoming data
         print("Form Data Received:", data.to_dict())
@@ -88,8 +90,10 @@ def create_item():
             for image in images:
                 if image and allowed_file(image.filename):
                     # Process and save image
-                    filename = secure_filename(image.filename)
+                    filename = secure_filename(f"{uuid.uuid4().hex}_{image.filename}")
+                    #filename = secure_filename(image.filename)
                     path = os.path.join(UPLOAD_FOLDER, filename)
+                    print("Saving image to:", path)
                     image.save(path)
                     
                     # Add to media array

@@ -55,7 +55,7 @@ function renderListings(listings) {
                 } else {
                     // Assume it's an image
                     mediaHtml += `
-                        <div class="slide">
+                        <div class="slide" style="display: ${index === 0 ? 'block' : 'none'};">
                             <img class="item-media" src="${media.url}" alt="${item.title || 'Item image'}">
                         </div>
                     `;
@@ -102,6 +102,7 @@ function renderListings(listings) {
         // Initialize slideshow for this listing if it has media
         if (item.media && item.media.length > 0) {
             slideshows[item._id || item.id] = 0;
+            console.log(item._id)
             showSlide(item._id || item.id, 0);
         }
     });
