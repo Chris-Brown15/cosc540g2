@@ -11,16 +11,16 @@ SwitchUp reimagines local exchanges with a matching system that pairs users base
 - Real-time Chat: WebSockets with Flask-SocketIO
 
 ## Project Structure
-├── backend/
-│   ├── constants/         # Status codes and other constants
-│   ├── environments/      # Environment configuration
-│   ├── routes/            # API endpoints
-│   ├── static/            # Static files (CSS, JS, images)
-│   ├── templates/         # HTML templates
-│   ├── utils/             # Utility functions
-│   ├── requirements.txt   # Python dependencies
-│   └── server.py          # Main server file
-└── README.md
+    ├── backend/
+    │   ├── constants/         # Status codes and other constants
+    │   ├── environments/      # Environment configuration
+    │   ├── routes/            # API endpoints
+    │   ├── static/            # Static files (CSS, JS, images)
+    │   ├── templates/         # HTML templates
+    │   ├── utils/             # Utility functions
+    │   ├── requirements.txt   # Python dependencies
+    │   └── server.py          # Main server file
+    └── README.md
 
 ## Setup and Installation
 
@@ -30,22 +30,29 @@ SwitchUp reimagines local exchanges with a matching system that pairs users base
 ## Environment Setup
 
 1. Clone the repository:
+
     git clone https://github.com/Chris-Brown15/cosc540g2.git
+
     cd cosc540g2
 
 2. Create environment configuration files:
+
     mkdir environments
 
 3. Create two environment files:
+
     .env.dev for development
+
     .env.prod for production
 
 ## Backend Setup
 
 1. Navigate to the project directory:
+
     cd cosc540g2
 
 2. Create and activate a virtual environment:
+
     python -m venv virtual_env
 
 ### On Windows
@@ -55,9 +62,11 @@ SwitchUp reimagines local exchanges with a matching system that pairs users base
     source virtual_env/bin/activate
 
 3. Install dependencies:
+
     pip install -r requirements.txt
 
 4. Run the server in development mode:
+
     python server.py --env dev
 
 The server should start at http://127.0.0.1:5000
