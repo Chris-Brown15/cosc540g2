@@ -1,7 +1,77 @@
-# SwitchUp
+# SwitchUp - Local Item Trading Platform
 
 ## Overview
-Trading Platform facilitating local item exchanges through a matching system.
+SwitchUp reimagines local exchanges with a matching system that pairs users based on what they're giving away and what they're looking for. Our goal is to promote a circular economy that reduces waste, builds community, and fosters a more sustainable way to share resources.
+
+## Tech Stack
+- Frontend: HTML, CSS, JavaScript (Vanilla JS)
+- Backend: Python with Flask
+- Database: MongoDB
+- Authentication: JWT (JSON Web Tokens)
+- Real-time Chat: WebSockets with Flask-SocketIO
+
+## Project Structure
+├── backend/
+│   ├── constants/         # Status codes and other constants
+│   ├── environments/      # Environment configuration
+│   ├── routes/            # API endpoints
+│   ├── static/            # Static files (CSS, JS, images)
+│   ├── templates/         # HTML templates
+│   ├── utils/             # Utility functions
+│   ├── requirements.txt   # Python dependencies
+│   └── server.py          # Main server file
+└── README.md
+
+## Setup and Installation
+
+- Python 3.8 or higher
+- MongoDB
+
+## Environment Setup
+
+1. Clone the repository:
+    git clone https://github.com/Chris-Brown15/cosc540g2.git
+    cd cosc540g2
+
+2. Create environment configuration files:
+    mkdir environments
+
+3. Create two environment files:
+    .env.dev for development
+    .env.prod for production
+
+## Backend Setup
+
+1. Navigate to the project directory:
+    cd cosc540g2
+
+2. Create and activate a virtual environment:
+    python -m venv virtual_env
+
+### On Windows
+    virtual_env\Scripts\activate
+
+### On macOS/Linux
+    source virtual_env/bin/activate
+
+3. Install dependencies:
+    pip install -r requirements.txt
+
+4. Run the server in development mode:
+    python server.py --env dev
+
+The server should start at http://127.0.0.1:5000
+
+## Team Members
+
+Mohammed Alam
+Christopher Brown
+Andrew Burkey
+Sara Martin
+Rinal Patel
+Alexis Tochiki
+
+
 
 ## Run Locally
 
