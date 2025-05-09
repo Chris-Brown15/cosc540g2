@@ -37,7 +37,7 @@ SwitchUp reimagines local exchanges with a matching system that pairs users base
 
 2. Create environment configuration files:
 
-    mkdir environments
+```mkdir environments```
 
 3. Create two environment files:
 
@@ -48,63 +48,40 @@ SwitchUp reimagines local exchanges with a matching system that pairs users base
 ## Backend Setup
 
 1. Navigate to the project directory:
-
-    cd cosc540g2
+```cd cosc540g2```
 
 2. Create and activate a virtual environment:
-
-    python -m venv virtual_env
+```python -m venv virtual_env```
 
 ### On Windows
-    virtual_env\Scripts\activate
+```virtual_env\Scripts\activate```
 
 ### On macOS/Linux
-    source virtual_env/bin/activate
+```source virtual_env/bin/activate```
 
 3. Install dependencies:
-
-    pip install -r requirements.txt
+```pip install -r requirements.txt```
 
 4. Run the server in development mode:
 
-    python server.py --env dev
+##### Dev
+```python server.py --env dev```
+
+##### PROD
+```python server.py --env prod```
 
 The server should start at http://127.0.0.1:5000
 
 ## Team Members
 
-Mohammed Alam
-Christopher Brown
-Andrew Burkey
-Sara Martin
-Rinal Patel
-Alexis Tochiki
+- Mohammed Alam
+- Christopher Brown
+- Andrew Burkey
+- Sara Martin
+- Rinal Patel
+- Alexis Tochiki
 
 
-
-## Run Locally
-
-### Dev
-```python server.py --env dev```
-
-### PROD
-```python server.py --env prod```
-
-## Setup
-
-# Frontend (HTML, CSS, Vanilla JS)
-
-# Current Frontend Implementation
-In the current frontend-only implementation:
-
-- Image previews are handled using the browser's FileReader API
-- Data is stored in memory and lost on page refresh
-- New listings are added to the DOM dynamically-+
-
-# Changes Needed for Backend Integration
-- 1. Update the submitListing Function
-- 2. Update the loadListings Function
-- 3. Update the renderListings Function
 
 ### Environment
 In the project root directory create an ```environments``` folder and make sure you have both the ```.env.dev``` and ```.env.prod``` files in there. 
