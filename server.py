@@ -30,6 +30,7 @@ from routes.exchanges import exchanges
 from routes.notifications import notifications
 from routes.inventory import inventory
 from routes.conversations import conversations
+from routes.conversations import exposeTheChatServer
 from routes.auth import auth_bp
 from utils.blueprints import register_blueprints
 
@@ -42,6 +43,8 @@ register_blueprints(app, "/api", [
     (exchanges, "/exchanges"),
     (users_bp, "/users"),
 ])
+
+exposeTheChatServer(chatServer)
 
 # Define your route
 @app.route('/')

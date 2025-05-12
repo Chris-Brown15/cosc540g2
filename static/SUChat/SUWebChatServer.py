@@ -63,6 +63,16 @@ The request new room event. Emitted by a client who wants a new room to be creat
 REQUEST_NEW_ROOM_EVENT = "requestNewRoom"
 
 '''
+The request room event. Emitted by the client. This is a convenience event which creates a room if it doesn't exist, and joins the publisher to it.
+'''
+REQUEST_ROOM_EVENT = "requestRoom"
+
+'''
+The set room event. Emitted by the server. This is a follow up event to the REQUEST_ROOM_EVENT to manually tell the client the ID of the room they requested.
+'''
+SET_ROOM_ID_EVENT = "setRoomID"
+
+'''
 The chat server class.
 
 '''
@@ -108,6 +118,7 @@ class SUCChatServer:
 		self.__theSocketIO.on_event(GET_ROOM_LOGS_EVENT , lambda getRoomLogsData: self.getRoomLogs(getRoomLogsData))
 		self.__theSocketIO.on_event(LEAVE_ALL_ROOMS_EVENT , lambda leaveAllRoomsData: self.leaveAllRooms(leaveAllRoomsData))
 		self.__theSocketIO.on_event(REQUEST_NEW_ROOM_EVENT , lambda requestNewRoomData: self.requestNewRoom(requestNewRoomData))
+		self.__theSocketIO.on_event(REQUEST_ROOM_EVENT , lambda requestRoomData: self.requestRoom(requestRoomData))
 
 		#map containing room IDs as keys and rooms as values.
 		self.__userRooms = {}
@@ -153,6 +164,23 @@ class SUCChatServer:
 		requirePresent(roomID)
 
 		return self.__userRooms.get(roomID)
+
+	'''
+	Returns a room by its name.
+
+	Parameters:
+		name — name of a room to find.
+
+	Return:
+		Room with the given name, or None if no room has that name.
+	'''
+	def getRoomByName(self , name):
+		requirePresent(name)
+		for room in self.__userRooms.values():
+			if room.name == name:
+				return room
+		return None
+
 
 	'''
 	Returns a dictionary view of the current rooms known to the server. The keys of the resulting dict are IDs (those returned by newRoom), and 
@@ -249,6 +277,26 @@ class SUCChatServer:
 		self.newRoom(jsonData.get("client") + "&&&" + jsonData.get("otherName"))
 
 	'''
+	Called when a client emits a REQUEST_ROOM_EVENT. This function receives JSON representing the name of the room to join and the username of the client who wants to join it.
+	A new room is created if none exists.
+	'''
+	def requestRoom(self , jsonString):
+		jsonData = json.loads(jsonString)
+		queriedRoom = jsonData.get("roomName")
+		
+		room = self.getRoomByName(queriedRoom)
+		if room == None:
+			roomID = self.newRoom(queriedRoom)
+			room = self.__userRooms[roomID]
+
+		join_room(room.name)
+		print(LOG_PREPEND + "User " + jsonData.get("username") + " joined room " + room.name)
+		self.setRoomID(room.getRoomID())
+
+	def setRoomID(self , ID):
+		self.__theSocketIO.emit(SET_ROOM_ID_EVENT , self.__setRoomIDEventJSON(ID) , to = request.sid)
+
+	'''
 	Starts this server, BLOCKING THE CURRENT THREAD. This call must replace a call to run from the app returned by Flask(__name__).
 	
 	Parameters:
@@ -270,13 +318,15 @@ class SUCChatServer:
 
 		self.__theSocketIO.run(self.__theFlaskApp , debug = debug , host = host , port = port , allow_unsafe_werkzeug=True)
 
-
 	def log(self , statement):
 		if(self.logging):
 			print(f"{LOG_PREPEND}" + statement)
 
 	def __clientReceiveMessageEventJSON(self , originalSender , message):
 		return {"originalSender" : originalSender , "message" : message}
+
+	def __setRoomIDEventJSON(self , ID):
+		return {"roomID" : ID}
 
 '''
 
@@ -328,6 +378,9 @@ class SUCChatRoom:
 			if name == username:
 				return True
 		return False
+
+	def getRoomID(self):
+		return self.__roomID
 
 class SUCChatLog:
 

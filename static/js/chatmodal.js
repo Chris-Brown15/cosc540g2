@@ -63,14 +63,30 @@ function openChatWithUser(userId, username, avatarSrc = null) {
   let myUsername = currentUser.email.split('@')[0]; 
   
   suc.initializeSocket(myUsername);
+  
+  //ensures the room name is constant for both users.
+  names = [myUsername , currentChatUsername].sort()
+  roomName = names[0] + "&&&" + names[1]
+  suc.requestRoom(roomName);
+
   suc.attachOnReceiveMessage("update html on receive" , json => {
 
     console.log(json.originalSender +  " says: " + json.message);
+    
+    const messageElement = document.createElement('div');
+    messageElement.className = 'message message-received';
+    
+    const timestamp = new Date();
+    const timeString = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    messageElement.innerHTML = `
+      ${text}
+      <div class="message-time">${timeString}</div>
+    `;
+    
+    chatMessages.appendChild(messageElement);
 
   });
-
-  
-  suc.requestNewRoom(currentChatUsername);
 
   //TODO: 
   /*
@@ -80,8 +96,6 @@ function openChatWithUser(userId, username, avatarSrc = null) {
   3) images...
 
   */
-
-  // suc.joinRoom(myUsername + "&&&" + currentChatUsername);  
 
   // Set avatar
   if (avatarSrc) {
@@ -214,17 +228,9 @@ async function loadConversation(userId) {
   }
 }
 
-function displayMessages(messages) {
-  chatMessages.innerHTML = '';
-  
-  if (!messages || messages.length === 0) {
-    chatMessages.innerHTML = '<div class="text-center p-3">No messages yet. Say hello!</div>';
-    return;
-  }
-  
-  messages.forEach(message => {
-    const isCurrentUser = message.sender_id === currentUser.id;
-    const messageElement = document.createElement('div');
+function createMessageHTML(message) {
+  const isCurrentUser = message.sender_id === currentUser.id;
+  const messageElement = document.createElement('div');
     messageElement.className = `message ${isCurrentUser ? 'message-sent' : 'message-received'}`;
     
     // Format timestamp
@@ -237,7 +243,17 @@ function displayMessages(messages) {
     `;
     
     chatMessages.appendChild(messageElement);
-  });
+}
+
+function displayMessages(messages) {
+  chatMessages.innerHTML = '';
+  
+  if (!messages || messages.length === 0) {
+    chatMessages.innerHTML = '<div class="text-center p-3">No messages yet. Say hello!</div>';
+    return;
+  }
+  
+  messages.forEach(message => createMessageHTML(message));
   
   // Scroll to bottom
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -282,7 +298,7 @@ async function sendMessage() {
     if (!sendResponse.ok) {
       throw new Error('Failed to send message');
     }
-    
+
     suc.sendMessage(text);
 
     // Add message to the UI
@@ -312,6 +328,27 @@ async function sendMessage() {
     console.error('Error sending message:', error);
     alert('Failed to send message. Please try again.');
   }
+}
+
+function requestRoomID(roomName) {
+
+  var formData = new FormData();
+  formData.append("roomName" , roomName);
+
+  var roomID;
+
+  fetch("api/conversations/getroomid" , {
+    method: "POST" ,
+    body: formData
+  })
+  .then(response => response.json())
+  .then(json => {
+    console.log(json)
+    roomID = json.roomID;
+  });
+
+  return roomID;
+
 }
 
 // Initialize chat if user is logged in

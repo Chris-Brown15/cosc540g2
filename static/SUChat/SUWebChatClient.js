@@ -73,6 +73,17 @@ const suc = (function() {
 
 	}
 
+	/*
+
+	Formulates the JSON emitted on REQUEST_ROOM event.
+
+	*/
+	function formRequestRoomJSON(roomName) {
+
+		return JSON.stringify({roomName : roomName , username : clientUsername});
+
+	}
+
 	//all public tokens
 	return {
 
@@ -100,6 +111,12 @@ const suc = (function() {
 		/* Request new room event name. */
 		REQUEST_NEW_ROOM_EVENT: "requestNewRoom" ,
 
+		/* Request room event name. */
+		REQUEST_ROOM_EVENT: "requestRoom" ,
+
+		/* Set room ID event name. */
+		SET_ROOM_ID_EVENT: "setRoomID" ,
+
 		/*
 
 		Initializes the SUC socket instance. 
@@ -114,7 +131,8 @@ const suc = (function() {
 			clientUsername = username;
 			theSocketIO = io();
 			theSocketIO.on(this.CLIENT_RECEIVE_MESSAGE_EVENT , response => this.onReceive(response));
-			
+			theSocketIO.on(this.SET_ROOM_ID_EVENT , response => this.setRoomID(response))
+
 		} ,
 
 		/*
@@ -244,6 +262,32 @@ const suc = (function() {
 		} ,
 
 		/*
+		
+		Shorthand for creating a room of a certain name and joining it.
+		Parameters:
+			roomName — name of the room to join. This room will either be created if none exists or joined if it already does.
+
+		*/
+		requestRoom: function(roomName) {
+
+			theSocketIO.emit(this.REQUEST_ROOM_EVENT , formRequestRoomJSON(roomName))
+
+		} ,
+
+		/*
+
+		Sets the room ID the client is communcating in manually.
+		Parameters:
+			newRoomID — new ID to set the room to join to.
+
+		*/
+		setRoomID: function(response) {
+
+			clientRoomID = response.roomID;
+
+		} ,
+
+		/*
 
 		Emits an event to the server to return the chat log for the given room. Once returned, onReceiveCallback is invoked which receives the
 		JSON returned by the server.
@@ -254,7 +298,7 @@ const suc = (function() {
 		*/
 		getRoomLogs: function(roomID , onReceiveCallback) {
 
-			theSocketIO.emit(GET_ROOM_LOGS_EVENT , formGetRoomLogsEventJSON(roomID));
+			theSocketIO.emit(this.GET_ROOM_LOGS_EVENT , formGetRoomLogsEventJSON(roomID));
 
 		} ,
 

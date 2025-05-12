@@ -8,6 +8,16 @@ logger = logging.getLogger("ConversationsRouter")
 
 conversations_coll = get_collection('messages')
 
+THE_CHAT_SERVER = None
+
+'''
+Called from the main server file to expose the chat server to this file.
+Parameters:
+    theChatServer — the single chat server used by the application.
+'''
+def exposeTheChatServer(theChatServer):
+    THE_CHAT_SERVER = theChatServer
+
 # Create a New Conversation
 @conversations.route('/', methods=['POST'])
 def create_conversation():
@@ -101,6 +111,8 @@ def check_conversation():
         logger.error(f"Error checking conversation: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-@conversations.route('/check', methods=['GET'])
+@conversations.route('/getroomid', methods=['POST'])
 def get_chat_room_id():
-    
+    roomName = request.form.get("roomName")
+    room = THE_CHAT_SERVER.getRoomByName(roomName)
+    return jsonify({"roomName" : roomName , "roomID" : room.getRoomID()})

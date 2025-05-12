@@ -36,8 +36,7 @@ async function handleLogin(e) {
 
         if (response.ok && result.token) {
             localStorage.setItem('authToken', result.token);
-            console.log('Login token:', result.token);
-
+           
             currentUser = {
                 id: result.user_id,
                 firstName: result.first_name || username,
